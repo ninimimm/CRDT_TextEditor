@@ -6,6 +6,7 @@ class CRDTnew:
         self.replica_id = replica_id
         self.blocks = []
         self.lens_of_blocks = []
+        self.editor = None
 
     def insert(self, index, value, timestamp=None, replica = None):
         if timestamp is None:
@@ -46,8 +47,10 @@ class CRDTnew:
             self.insert(index, value)
 
     def cursor_remove(self, cursor):
-        index, count = self.cursor_to_index(cursor - 1)
-        self.blocks[index][0].pop(count)
+        index, count = self.cursor_to_index(cursor)
+        self.blocks[index][0].pop(count - 1)
+        if len(self.blocks[index][0]) == 0:
+            self.remove(index)
 
     def add_string(self, cursor, string):
         index, count = self.cursor_to_index(cursor)
@@ -69,26 +72,38 @@ class Merge:
         crdt = CRDTnew("")
         crdt_values = []
         while first_index < len(crdt1.blocks) and second_index < len(crdt2.blocks):
-            if crdt1.blocks[first_index][1] < crdt2.blocks[second_index][1]:
-                if crdt1.blocks[first_index][0] not in crdt_values:
+            if crdt1.blocks[first_index][1] <= crdt2.blocks[second_index][1]:
+                if crdt1.blocks[first_index][0] == crdt2.blocks[second_index][0] and \
+                        (''.join(crdt1.blocks[first_index][0]), crdt1.blocks[first_index][1]) in self.set_merge:
                     crdt.insert(len(crdt.blocks), crdt1.blocks[first_index][0])
-                    crdt_values.append(crdt1.blocks[first_index][0])
-                first_index += 1
+                    first_index += 1
+                    second_index += 1
+                else:
+                    crdt.insert(len(crdt.blocks), crdt1.blocks[first_index][0])
+                    first_index += 1
+                save = crdt.blocks[-1]
+                self.set_merge.add((''.join(save[0]), save[1]))
             else:
-                if crdt2.blocks[second_index][0] not in crdt_values:
-                    crdt_values.append(crdt2.blocks[second_index][0])
+                if crdt1.blocks[first_index][0] == crdt2.blocks[second_index][0] and\
+                    (''.join(crdt1.blocks[first_index][0]), crdt1.blocks[first_index][1]) in self.set_merge:
+                    crdt.insert(len(crdt.blocks), crdt1.blocks[first_index][0])
+                    first_index += 1
+                    second_index += 1
+                else:
                     crdt.insert(len(crdt.blocks), crdt2.blocks[second_index][0])
-                second_index += 1
+                    second_index += 1
+                save = crdt.blocks[-1]
+                self.set_merge.add((''.join(save[0]), save[1]))
         if first_index == len(crdt1.blocks):
             for i in range(second_index, len(crdt2.blocks)):
-                if crdt2.blocks[second_index][0] not in crdt_values:
-                    crdt_values.append(crdt2.blocks[i][0])
-                    crdt.insert(len(crdt.blocks), crdt2.blocks[i][0])
+                crdt.insert(len(crdt.blocks), crdt2.blocks[i][0])
+                save = crdt.blocks[-1]
+                self.set_merge.add((''.join(save[0]), save[1]))
         else:
             for i in range(first_index, len(crdt1.blocks)):
-                if crdt1.blocks[first_index][0] not in crdt_values:
-                    crdt_values.append(crdt1.blocks[i][0])
-                    crdt.insert(len(crdt.blocks), crdt1.blocks[i][0])
+                crdt.insert(len(crdt.blocks), crdt1.blocks[i][0])
+                save = crdt.blocks[-1]
+                self.set_merge.add((''.join(save[0]), save[1]))
         crdt1.blocks = copy.deepcopy(crdt.blocks)
         for block in crdt1.blocks:
             block[2] = crdt1.replica_id
@@ -97,16 +112,3 @@ class Merge:
         for block in crdt2.blocks:
             block[2] = crdt2.replica_id
         crdt2.lens_of_blocks = crdt.lens_of_blocks.copy()
-        print(crdt1.blocks)
-        print(crdt2.blocks)
-        print(crdt.blocks)
-
-"""
-a b
-a b c
-
-Привет - a Алиса -b
-Привет - a Алиса -b , пока! - c
-
-Привет Алиса Привет Алиса, пока!
-"""

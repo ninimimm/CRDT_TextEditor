@@ -6,15 +6,17 @@ from CRDT_structure import Merge
 crdt1 = CRDTnew("replica1")
 crdt2 = CRDTnew("replica2")
 MERGE = Merge()
-
+CURSOR = 0
 def get_cursor_pos(text_widget):
     current_index = text_widget.index(tk.INSERT)
     text_up_to_cursor = text_widget.get("1.0", current_index)
     return len(text_up_to_cursor)
 
 def merge_texts():
+    global CURSOR
     MERGE.merge(crdt1, crdt2)
     refresh_text_widgets()
+    CURSOR -= 1
 
 def refresh_text_widgets():
     # Clear the existing content of the editor1
@@ -34,19 +36,30 @@ def refresh_text_widgets():
 
 
 def on_key(event, crdt, text_widget):
+    global CURSOR, crdt1, crdt2, MERGE
+
     if len(event.char) == 1:  # Event for character input
         cursor_pos = get_cursor_pos(text_widget)
-        # print(event.char)
-        crdt.add_string(cursor_pos, event.char)
-        refresh_text_widgets()
+        if cursor_pos - 1 != CURSOR:
+            crdt.cursor_insert(cursor_pos, event.char)
+        else:
+            crdt.add_string(cursor_pos, event.char)
+        CURSOR = cursor_pos
+        crdt.editor.insert(f"1.{cursor_pos}", event.char)
+        print(crdt1.blocks)
+        print(crdt2.blocks)
+        print(MERGE.set_merge)
         return "break"  # This prevents the default text widget behavior
 
 
 def on_backspace(event, crdt, text_widget):
+    global CURSOR, crdt1
     cursor_pos = get_cursor_pos(text_widget)
     if cursor_pos > 0:
-        crdt.cursor_remove(cursor_pos - 1)
-        refresh_text_widgets()
+        CURSOR -= 1
+        crdt.cursor_remove(cursor_pos)
+        text_widget.delete(f"1.{cursor_pos}", f"1.{cursor_pos}")
+    print(crdt1.blocks)
 
 # Создание объектов CRDT для каждого редактора
 
@@ -60,12 +73,14 @@ editor1 = scrolledtext.ScrolledText(root, width=40, height=10)
 editor1.pack(side="left", fill="both", expand=True)
 editor1.bind("<Key>", lambda event: on_key(event, crdt1, editor1))
 editor1.bind("<BackSpace>", lambda event: on_backspace(event, crdt1, editor1))
+crdt1.editor = editor1
 
 # Создание второго текстового поля
 editor2 = scrolledtext.ScrolledText(root, width=40, height=10)
 editor2.pack(side="right", fill="both", expand=True)
 editor2.bind("<Key>", lambda event: on_key(event, crdt2, editor2))
 editor2.bind("<BackSpace>", lambda event: on_backspace(event, crdt2, editor2))
+crdt2.editor = editor2
 
 # Создание кнопки для слияния текстов
 merge_button = tk.Button(root, text="Merge", command=merge_texts)
