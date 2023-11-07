@@ -20,6 +20,8 @@ def refresh_text_widgets():
     # Clear the existing content of the editor1
     editor1.delete("1.0", tk.END)
     # Insert the new content from crdt1's display method
+    print(crdt1.blocks)
+    print(crdt2.blocks)
     editor1_content = crdt1.display()  # ensure display() returns a string
     if editor1_content is not None:  # Check if content is not None
         editor1.insert("1.0", editor1_content)
@@ -34,7 +36,8 @@ def refresh_text_widgets():
 def on_key(event, crdt, text_widget):
     if len(event.char) == 1:  # Event for character input
         cursor_pos = get_cursor_pos(text_widget)
-        crdt.cursor_insert(cursor_pos, event.char)
+        print(event.char)
+        crdt.add_string(cursor_pos, event.char)
         refresh_text_widgets()
         return "break"  # This prevents the default text widget behavior
 

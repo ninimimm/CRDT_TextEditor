@@ -6,10 +6,12 @@ class CRDTnew:
         self.blocks = []
         self.lens_of_blocks = []
 
-    def insert(self, index, value, timestamp=None):
+    def insert(self, index, value, timestamp=None, replica = None):
         if timestamp is None:
             timestamp = datetime.datetime.now()
-        self.blocks.insert(index, [list(value), timestamp, self.replica_id])
+        if replica is None:
+            replica = self.replica_id
+        self.blocks.insert(index, [list(value), timestamp, replica])
         self.lens_of_blocks.insert(index, len(value))
 
 
@@ -49,7 +51,7 @@ class CRDTnew:
     def add_string(self, cursor, string):
         index, count = self.cursor_to_index(cursor)
         if index < len(self.blocks):
-            self.blocks[index] = self.blocks[index] + list(string)
+            self.blocks[index][0] = self.blocks[index][0] + list(string)
             self.lens_of_blocks[index] += len(string)
         else:
             self.insert(index, list(string), datetime.datetime.now())
@@ -59,25 +61,65 @@ class CRDTnew:
 
 class Merge:
     def __init__(self):
+        self.set_merge = set()
         pass
     def merge(self, crdt1, crdt2):
         first_index = 0
         second_index = 0
         crdt = CRDTnew(f"{crdt1.replica_id}merge{crdt2.replica_id}")
+        name_crdt1 = f"{crdt1.replica_id}merge{crdt2.replica_id}"
+        name_crdt2 = f"{crdt2.replica_id}merge{crdt1.replica_id}"
         while first_index < len(crdt1.blocks) and second_index < len(crdt2.blocks):
             if crdt1.blocks[first_index][1] < crdt2.blocks[second_index][1]:
-                crdt.insert(len(crdt.blocks), crdt1.blocks[first_index][0])
+                if crdt1.blocks[first_index][0] == crdt2.blocks[second_index][0] and \
+                        (''.join(crdt1.blocks[first_index][0]), crdt1.blocks[first_index][1], crdt1.blocks[first_index][2]) in self.set_merge:
+                    crdt.insert(len(crdt.blocks), crdt1.blocks[first_index][0], None, name_crdt1)
+                    first_index += 1
+                    second_index += 1
+                else:
+                    crdt.insert(len(crdt.blocks), crdt1.blocks[first_index][0], None, name_crdt1)
+                    first_index += 1
+                save = crdt.blocks[-1]
+                self.set_merge.add((''.join(save[0]), save[1], save[2]))
+            elif crdt1.blocks[first_index][1] > crdt2.blocks[second_index][1]:
+                if crdt1.blocks[first_index][0] == crdt2.blocks[second_index][0] and\
+                    (''.join(crdt1.blocks[first_index][0]), crdt1.blocks[first_index][1]) in self.set_merge:
+                    crdt.insert(len(crdt.blocks), crdt1.blocks[first_index][0], None, name_crdt1)
+                    first_index += 1
+                    second_index += 1
+                else:
+                    crdt.insert(len(crdt.blocks), crdt2.blocks[second_index][0], None, name_crdt2)
+                    second_index += 1
+                save = crdt.blocks[-1]
+                self.set_merge.add((''.join(save[0]), save[1], save[2]))
+            elif crdt1.blocks[first_index][1] == crdt2.blocks[second_index][1]:
+                crdt.insert(len(crdt.blocks), crdt1.blocks[first_index][0], None, name_crdt1)
                 first_index += 1
-            else:
-                crdt.insert(len(crdt.blocks), crdt2.blocks[second_index][0])
                 second_index += 1
+                save = crdt.blocks[-1]
+                self.set_merge.add((''.join(save[0]), save[1], save[2]))
         if first_index == len(crdt1.blocks):
             for i in range(second_index, len(crdt2.blocks)):
-                crdt.insert(len(crdt.blocks), crdt2.blocks[i][0])
+                crdt.insert(len(crdt.blocks), crdt2.blocks[i][0], None, name_crdt2)
         else:
             for i in range(first_index, len(crdt1.blocks)):
-                crdt.insert(len(crdt.blocks), crdt1.blocks[i][0])
+                crdt.insert(len(crdt.blocks), crdt1.blocks[i][0], None, name_crdt1)
+
         crdt1.blocks = crdt.blocks.copy()
         crdt1.lens_of_blocks = crdt.lens_of_blocks.copy()
+        crdt1.replica_id = name_crdt1
+
+
         crdt2.blocks = crdt.blocks.copy()
         crdt2.lens_of_blocks = crdt.lens_of_blocks.copy()
+        crdt2.replica_id = name_crdt2
+
+"""
+a b
+a b c
+
+Привет - a Алиса -b
+Привет - a Алиса -b , пока! - c
+
+Привет Алиса Привет Алиса, пока!
+"""
