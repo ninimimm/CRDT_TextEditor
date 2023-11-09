@@ -23,7 +23,8 @@ if __name__ == "__main__":
         gui.root.mainloop()
     def connection():
         client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        client.connect(('178.154.244.233', 8080))
+        # '178.154.244.233'
+        client.connect(('127.0.0.1', 8080))
         while True:
             if len(shared_data.send) > 0:
                 print(shared_data.send)
@@ -36,7 +37,7 @@ if __name__ == "__main__":
                 gui.refresh_text_widgets()
                 len_cursor = 0
                 for i in range(len(class_client.crdt.blocks)):
-                    print(class_client.crdt.blocks[i])
+                    print(class_client.crdt.blocks[i], "тут")
                     if class_client.crdt.blocks[i][3] is not None:
                         len_cursor += class_client.crdt.blocks[3]
                         class_client.crdt.blocks[3] = None

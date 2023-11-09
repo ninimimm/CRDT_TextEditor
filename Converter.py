@@ -5,11 +5,10 @@ class Converter:
         self.struct = struct
 
     def convert_crdt_to_str(self):
-        print(self.struct.crdt.blocks)
         return '--'.join([self.convert_block_to_str(x) for x in self.struct.crdt.blocks])
 
     def convert_block_to_str(self, block):
-        return f"{''.join(block[0])}::{block[1].strftime('%m/%d/%y %H:%M:%S.%f')}::{block[2]}"
+        return f"{''.join(block[0])}::{block[1].strftime('%m/%d/%y %H:%M:%S.%f')}::{block[2]}::{block[3]}"
 
     def convert_string_to_crdt(self, data_string):
         blocks_str = data_string.split('--')
@@ -20,5 +19,5 @@ class Converter:
         return crdt1
 
     def convert_string_to_block(self, string):
-        value, time, replica = string.split('::')
-        return [list(value), datetime.strptime(time, '%m/%d/%y %H:%M:%S.%f'), replica]
+        value, time, replica, cursor = string.split('::')
+        return [list(value), datetime.strptime(time, '%m/%d/%y %H:%M:%S.%f'), replica, cursor]
