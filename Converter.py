@@ -5,13 +5,16 @@ class Converter:
         self.struct = struct
 
     def convert_crdt_to_str(self):
-        return '--'.join([self.convert_block_to_str(x) for x in self.struct.crdt.blocks])
+        replace = '*&#(&^#$)(&^)*&!#^&$**!'
+        return f"{replace}".join([self.convert_block_to_str(x) for x in self.struct.crdt.blocks])
 
     def convert_block_to_str(self, block):
-        return f"{''.join(block[0])}::{block[1].strftime('%m/%d/%y %H:%M:%S.%f')}::{block[2]}::{block[3]}"
+        replace = '<*%*$&:-*&#$(!-!>'
+        return f"{''.join(block[0])}{replace}{block[1].strftime('%m/%d/%y %H:%M:%S.%f')}{replace}{block[2]}{replace}{block[3]}"
 
     def convert_string_to_crdt(self, data_string):
-        blocks_str = data_string.split('--')
+        replace = '*&#(&^#$)(&^)*&!#^&$**!'
+        blocks_str = data_string.split(replace)
         crdt1 = CRDT("")
         for block_str in blocks_str:
             block = self.convert_string_to_block(block_str)
@@ -19,5 +22,5 @@ class Converter:
         return crdt1
 
     def convert_string_to_block(self, string):
-        value, time, replica, cursor = string.split('::')
+        value, time, replica, cursor = string.split('<*%*$&:-*&#$(!-!>')
         return [list(value), datetime.strptime(time, '%m/%d/%y %H:%M:%S.%f'), replica, None if cursor == "None" else int(cursor)]
