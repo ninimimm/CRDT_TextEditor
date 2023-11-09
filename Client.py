@@ -1,5 +1,4 @@
 import socket
-import select
 import threading
 from GUI import GUI
 from Converter import Converter
@@ -15,16 +14,12 @@ class SharedData:
     def __init__(self):
         self.send = ""
 
-# Создаем единственный экземпляр SharedData
-shared_data = SharedData()
-gui = GUI(shared_data)
-
-# В ваших потоках используйте shared_data.coordinate и shared_data.gam
 if __name__ == "__main__":
     class_client = Client()
     converter = Converter(class_client)
+    shared_data = SharedData()
+    gui = GUI(shared_data)
     def run_start():
-        global gui
         gui.root.mainloop()
     def connection():
         client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -36,5 +31,6 @@ if __name__ == "__main__":
                 class_client.crdt = converter.convert_string_to_crdt(client.recv(1024).decode('utf-8'))
                 gui.refresh_text_widgets()
 
-    threading.Thread(target=run_start).start()
+
     threading.Thread(target=connection).start()
+    run_start()
