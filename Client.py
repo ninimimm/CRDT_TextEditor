@@ -16,7 +16,7 @@ class SharedData:
 
 if __name__ == "__main__":
     class_client = Client()
-    converter = Converter(class_client)
+    converter = Converter()
     shared_data = SharedData()
     gui = GUI(shared_data, class_client)
     def run_start():

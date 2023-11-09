@@ -38,7 +38,7 @@ if __name__ == '__main__':
     server.bind(('0.0.0.0', 8080))
     server.listen()
     server_class = Server()
-    converter = Converter(server_class)
+    converter = Converter()
     print("Сервер запущен и ждет подключений.")
     clients = []
     while True:
