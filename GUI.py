@@ -1,90 +1,77 @@
 import tkinter as tk
 from tkinter import scrolledtext
-from CRDT_structure import CRDTnew
-from CRDT_structure import Merge
-
-crdt1 = CRDTnew("replica1")
-crdt2 = CRDTnew("replica2")
-MERGE = Merge()
-CURSOR = 0
-def get_cursor_pos(text_widget):
-    current_index = text_widget.index(tk.INSERT)
-    text_up_to_cursor = text_widget.get("1.0", current_index)
-    return len(text_up_to_cursor)
-
-def merge_texts():
-    global CURSOR
-    MERGE.merge(crdt1, crdt2)
-    refresh_text_widgets()
-    CURSOR -= 1
-
-def refresh_text_widgets():
-    # Clear the existing content of the editor1
-    editor1.delete("1.0", tk.END)
-    # Insert the new content from crdt1's display method
-    # print(crdt1.blocks)
-    # print(crdt2.blocks)
-    editor1_content = crdt1.display()  # ensure display() returns a string
-    if editor1_content is not None:  # Check if content is not None
-        editor1.insert("1.0", editor1_content)
-
-    # Repeat the process for editor2 and crdt2
-    editor2.delete("1.0", tk.END)
-    editor2_content = crdt2.display()  # ensure display() returns a string
-    if editor2_content is not None:  # Check if content is not None
-        editor2.insert("1.0", editor2_content)
+from CRDT_structure import CRDT
 
 
-def on_key(event, crdt, text_widget):
-    global CURSOR, crdt1, crdt2, MERGE
+class GUI:
+    def __init__(self, shared_data):
+        self.shared_data = shared_data
+        self.crdt = CRDT("replica1")
+        self.cursor = 0
+        self.root = tk.Tk()
+        self.root.title("CRDT Text Editors")
 
-    if len(event.char) == 1:  # Event for character input
-        cursor_pos = get_cursor_pos(text_widget)
-        if cursor_pos - 1 != CURSOR:
-            crdt.cursor_insert(cursor_pos, event.char)
-        else:
-            crdt.add_string(cursor_pos, event.char)
-        CURSOR = cursor_pos
-        crdt.editor.insert(f"1.{cursor_pos}", event.char)
-        print(crdt1.blocks)
-        print(crdt2.blocks)
-        print(MERGE.set_merge)
-        return "break"  # This prevents the default text widget behavior
+        self.editor = scrolledtext.ScrolledText(self.root, width=40, height=10)
+        self.full_text_editor()
 
 
-def on_backspace(event, crdt, text_widget):
-    global CURSOR, crdt1
-    cursor_pos = get_cursor_pos(text_widget)
-    if cursor_pos > 0:
-        CURSOR -= 1
-        crdt.cursor_remove(cursor_pos)
-        text_widget.delete(f"1.{cursor_pos}", f"1.{cursor_pos}")
-    print(crdt1.blocks)
+    def full_text_editor(self):
+        self.editor.pack(side="left", fill="both", expand=True)
+        self.editor.bind("<Key>", lambda event: self.on_key(event))
+        self.editor.bind("<BackSpace>", self.on_backspace)
+        self.editor.bind("<Control-KeyPress>", self.keypress)
+        self.editor.bind('<Control-v>', self.paste_text or 'break')
 
-# Создание объектов CRDT для каждого редактора
+    def get_cursor_pos(self, text_widget):
+        current_index = text_widget.index(tk.INSERT)
+        text_up_to_cursor = text_widget.get("1.0", current_index)
+        return len(text_up_to_cursor)
+
+    def merge_texts(self):
+        self.shared_data.send = "merge"
+
+    def refresh_text_widgets(self):
+        self.editor.delete("1.0", tk.END)
+        editor_content = self.crdt.display()
+        if editor_content is not None:
+            self.editor.insert("1.0", editor_content)
 
 
-# Создание в окна
-root = tk.Tk()
-root.title("CRDT Text Editors")
+    def on_key(self, event):
+        if len(event.char) == 1:
+            cursor_pos = self.get_cursor_pos(self.editor)
+            if cursor_pos - 1 != self.cursor:
+                self.crdt.cursor_insert(cursor_pos, event.char)
+            else:
+                self.crdt.add_string(cursor_pos, event.char)
+            self.cursor = cursor_pos
+            self.crdt.editor.insert(f"1.{cursor_pos}", event.char)
+            return "break"
 
-# Создание первого текстового поля
-editor1 = scrolledtext.ScrolledText(root, width=40, height=10)
-editor1.pack(side="left", fill="both", expand=True)
-editor1.bind("<Key>", lambda event: on_key(event, crdt1, editor1))
-editor1.bind("<BackSpace>", lambda event: on_backspace(event, crdt1, editor1))
-crdt1.editor = editor1
+    def on_backspace(self):
+        cursor_pos = self.get_cursor_pos(self.editor)
+        if cursor_pos > 0:
+            self.cursor -= 1
+            self.crdt.cursor_remove(cursor_pos)
+            self.editor.delete(f"1.{cursor_pos}", f"1.{cursor_pos}")
+    def copy_text(self):
+        selected_text = self.editor.selection_get()
+        self.root.clipboard_clear()
+        self.root.clipboard_append(selected_text)
 
-# Создание второго текстового поля
-editor2 = scrolledtext.ScrolledText(root, width=40, height=10)
-editor2.pack(side="right", fill="both", expand=True)
-editor2.bind("<Key>", lambda event: on_key(event, crdt2, editor2))
-editor2.bind("<BackSpace>", lambda event: on_backspace(event, crdt2, editor2))
-crdt2.editor = editor2
+    def paste_text(self):
+        try:
+            clipboard_text = self.root.clipboard_get()
+        except tk.TclError as e:
+            return
+        cursor_pos = self.get_cursor_pos(self.editor)
+        self.crdt.cursor_insert(cursor_pos, clipboard_text)
+        self.cursor = cursor_pos + len(clipboard_text)
+        self.editor.insert(tk.INSERT, clipboard_text)
+        self.editor.see(tk.INSERT)
 
-# Создание кнопки для слияния текстов
-merge_button = tk.Button(root, text="Merge", command=merge_texts)
-merge_button.pack(side="bottom")
-
-# Запуск главного цикла Tkinter
-root.mainloop()
+    def keypress(self, e):
+        if e.keycode == 86 and e.keysym != 'v':
+            self.paste_text() or 'break'
+        elif e.keycode == 67 and e.keysym != 'c':
+            self.copy_text()
