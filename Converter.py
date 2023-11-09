@@ -20,4 +20,4 @@ class Converter:
 
     def convert_string_to_block(self, string):
         value, time, replica, cursor = string.split('::')
-        return [list(value), datetime.strptime(time, '%m/%d/%y %H:%M:%S.%f'), replica, cursor]
+        return [list(value), datetime.strptime(time, '%m/%d/%y %H:%M:%S.%f'), replica, None if cursor == "None" else int(cursor)]
