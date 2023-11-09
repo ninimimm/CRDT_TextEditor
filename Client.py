@@ -23,7 +23,7 @@ if __name__ == "__main__":
         gui.root.mainloop()
     def connection():
         client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        client.connect(('127.0.0.1', 8080))
+        client.connect(('178.154.244.233', 8080))
         while True:
             if len(shared_data.send) > 0:
                 print(shared_data.send)
