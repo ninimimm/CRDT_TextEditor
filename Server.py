@@ -17,6 +17,7 @@ class Server:
 
     def merge_and_send_crdt(self, cl, cv, data):
         self.Merge.merge(cv.convert_string_to_crdt(data), self.crdt)
+        print(self.crdt.blocks)
         send_data(cl, cv.convert_crdt_to_str())
 
 def handle_client(client, address):
