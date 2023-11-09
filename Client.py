@@ -31,6 +31,7 @@ if __name__ == "__main__":
                 print(converter.convert_crdt_to_str())
                 index, count = class_client.crdt.cursor_to_index(gui.cursor)
                 class_client.crdt.blocks[index][3] = count
+                print(class_client.crdt.blocks)
                 client.sendall(converter.convert_crdt_to_str().encode('utf-8'))
                 ans = client.recv(1024).decode('utf-8')
                 class_client.crdt = converter.convert_string_to_crdt(ans)
