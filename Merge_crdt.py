@@ -48,4 +48,6 @@ class Merge:
         crdt2.blocks = copy.deepcopy(crdt.blocks)
         for block in crdt2.blocks:
             block[2] = crdt2.replica_id
+            if block[3] is not None:
+                block[3] = None
         crdt2.lens_of_blocks = crdt.lens_of_blocks.copy()

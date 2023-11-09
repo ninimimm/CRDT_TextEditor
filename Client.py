@@ -40,11 +40,11 @@ if __name__ == "__main__":
                 for i in range(len(class_client.crdt.blocks)):
                     print(class_client.crdt.blocks[i], "тут")
                     if class_client.crdt.blocks[i][3] is not None:
-                        len_cursor += class_client.crdt.blocks[3]
-                        class_client.crdt.blocks[3] = None
+                        len_cursor += class_client.crdt.blocks[i][3]
+                        class_client.crdt.blocks[i][3] = None
                         break
                     len_cursor += class_client.crdt.lens_of_blocks[i]
-                gui.editor.mark_set("insert", f"1.{len_cursor}")
+                gui.editor.mark_set("insert", f"1.{len_cursor + 1}")
                 shared_data.send = ""
 
 
