@@ -15,19 +15,16 @@ class Server:
         self.crdt = CRDT("server")
         self.Merge = Merge()
 
-    def merge_and_send_crdt(self, cl, cv):
-        self.Merge.merge(cv.convert_string_to_crdt(cl), self.crdt)
-        send_data(cl, cv.convert_crdt_to_str(cl))
+    def merge_and_send_crdt(self, cl, cv, data):
+        self.Merge.merge(cv.convert_string_to_crdt(data), self.crdt)
+        send_data(cl, cv.convert_crdt_to_str(self.crdt))
 
 def handle_client(client, address):
     while True:
         try:
             data = get_data(client)
             if len(data) > 0:
-                try:
-                    dict_methods[data]()
-                except Exception as e:
-                    print(e)
+                server_class.merge_and_send_crdt(client, converter, data)
         except (ConnectionResetError, OSError) as Ex:
             print(Ex)
             print("Клиент отключился")
@@ -42,8 +39,6 @@ if __name__ == '__main__':
     converter = Converter(server_class)
     print("Сервер запущен и ждет подключений.")
     clients = []
-    dict_methods = {"merge": server_class.merge_and_send_crdt}
-
     while True:
         client, address = server.accept()
         clients.append(client)

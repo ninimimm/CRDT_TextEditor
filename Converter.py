@@ -19,5 +19,6 @@ class Converter:
         return crdt1
 
     def convert_string_to_block(self, string):
+        print(string)
         value, time, replica = string.split('::')
         return [list(value), datetime.strptime(time[1], '%m/%d/%y %H:%M:%S'), replica[3]]

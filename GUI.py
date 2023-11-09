@@ -45,15 +45,17 @@ class GUI:
             else:
                 self.crdt.add_string(cursor_pos, event.char)
             self.cursor = cursor_pos
-            self.crdt.editor.insert(f"1.{cursor_pos}", event.char)
+            self.editor.insert(f"1.{cursor_pos}", event.char)
+            self.merge_texts()
             return "break"
 
-    def on_backspace(self):
+    def on_backspace(self, event):
         cursor_pos = self.get_cursor_pos(self.editor)
         if cursor_pos > 0:
             self.cursor -= 1
             self.crdt.cursor_remove(cursor_pos)
             self.editor.delete(f"1.{cursor_pos}", f"1.{cursor_pos}")
+            self.merge_texts()
     def copy_text(self):
         selected_text = self.editor.selection_get()
         self.root.clipboard_clear()

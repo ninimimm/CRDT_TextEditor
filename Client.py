@@ -26,8 +26,7 @@ if __name__ == "__main__":
         client.connect(('178.154.244.233', 8080))
         while True:
             if len(shared_data.send) > 0:
-                client.sendall("merge".encode('utf-8'))
-                client.sendall(shared_data.send.encode('utf-8'))
+                client.sendall(converter.convert_crdt_to_str(class_client.crdt).encode('utf-8'))
                 class_client.crdt = converter.convert_string_to_crdt(client.recv(1024).decode('utf-8'))
                 gui.refresh_text_widgets()
 
