@@ -13,32 +13,32 @@ class Merge:
             first, second = crdt1.blocks[first_index], crdt2.blocks[second_index]
             if first[1] <= second[1]:
                 if first[1] in self.set_merge:
-                    crdt.insert(len(crdt.blocks), first[0], first[1], first[3])
+                    crdt.insert(len(crdt.blocks), first[0], timestamp=first[1], cursor=first[3])
                     first_index += 1
                     second_index += 1
                 else:
-                    crdt.insert(len(crdt.blocks), first[0], first[1], first[3])
+                    crdt.insert(len(crdt.blocks), first[0], timestamp=first[1], cursor=first[3])
                     first_index += 1
                 save = crdt.blocks[-1]
                 self.set_merge.add(save[1])
             else:
                 if first[1] in self.set_merge:
-                    crdt.insert(len(crdt.blocks), first[0], first[1], first[3])
+                    crdt.insert(len(crdt.blocks), first[0], timestamp=first[1], cursor=first[3])
                     first_index += 1
                     second_index += 1
                 else:
-                    crdt.insert(len(crdt.blocks), second[0], second[1], second[3])
+                    crdt.insert(len(crdt.blocks), second[0], timestamp=second[1], cursor=second[3])
                     second_index += 1
                 save = crdt.blocks[-1]
                 self.set_merge.add(save[1])
         if first_index == len(crdt1.blocks):
             for i in range(second_index, len(crdt2.blocks)):
-                crdt.insert(len(crdt.blocks), crdt2.blocks[i][0], crdt2.blocks[i][1])
+                crdt.insert(len(crdt.blocks), crdt2.blocks[i][0], timestamp=crdt2.blocks[i][1], cursor=crdt2.blocks[i][3])
                 save = crdt.blocks[-1]
                 self.set_merge.add(save[1])
         else:
             for i in range(first_index, len(crdt1.blocks)):
-                crdt.insert(len(crdt.blocks), crdt1.blocks[i][0], crdt1.blocks[i][1])
+                crdt.insert(len(crdt.blocks), crdt1.blocks[i][0], timestamp=crdt1.blocks[i][1], cursor=crdt1.blocks[i][3])
                 save = crdt.blocks[-1]
                 self.set_merge.add(save[1])
         crdt1.blocks = copy.deepcopy(crdt.blocks)
