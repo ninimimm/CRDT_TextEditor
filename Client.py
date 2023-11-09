@@ -22,9 +22,8 @@ if __name__ == "__main__":
     def run_start():
         gui.root.mainloop()
     def connection():
-        client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        # '178.154.244.233'
-        client.connect(('178.154.244.233', 8080))
+        client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        ip_port = ('178.154.244.233', 8080)
         while True:
             if len(shared_data.send) > 0:
                 print(shared_data.send)
@@ -32,9 +31,9 @@ if __name__ == "__main__":
                 index, count = class_client.crdt.cursor_to_index(gui.cursor)
                 class_client.crdt.blocks[index][3] = count
                 print(class_client.crdt.blocks)
-                client.sendall(converter.convert_crdt_to_str(class_client.crdt).encode('utf-8'))
-                ans = client.recv(1024).decode('utf-8')
-                class_client.crdt = converter.convert_string_to_crdt(ans)
+                client.sendto(converter.convert_crdt_to_str(class_client.crdt).encode('utf-8'), ip_port)
+                ans, _ = client.recvfrom(1024)
+                class_client.crdt = converter.convert_string_to_crdt(ans.decode('utf-8'))
                 gui.refresh_text_widgets()
                 len_cursor = 0
                 for i in range(len(class_client.crdt.blocks)):
