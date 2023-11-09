@@ -7,8 +7,8 @@ from Merge_crdt import Merge
 def get_data(cl):
     return cl.recv(1024).decode('utf-8')
 
-def send_data(client, data):
-    client.sendall(data.encode('utf-8'))
+def send_data(cl, data):
+    cl.sendall(data.encode('utf-8'))
 
 class Server:
     def __init__(self):
