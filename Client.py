@@ -44,8 +44,8 @@ if __name__ == "__main__":
                         class_client.crdt.blocks[i][3] = None
                         break
                     len_cursor += class_client.crdt.lens_of_blocks[i]
-                gui.editor.mark_set("insert", f"1.{len_cursor}")
-                gui.cursor = len_cursor - 1
+                gui.editor.mark_set("insert", f"1.{len_cursor + 1}")
+                gui.cursor = len_cursor
                 shared_data.send = ""
 
 

@@ -11,7 +11,7 @@ class Merge:
         print(self.set_merge)
         while first_index < len(crdt1.blocks) and second_index < len(crdt2.blocks):
             first, second = crdt1.blocks[first_index], crdt2.blocks[second_index]
-            if first[1] <= second[1]:
+            if first[1] < second[1]:
                 if first[1] in self.set_merge:
                     crdt.insert(len(crdt.blocks), first[0], timestamp=first[1], cursor=first[3])
                     first_index += 1
@@ -21,7 +21,7 @@ class Merge:
                     first_index += 1
                 save = crdt.blocks[-1]
                 self.set_merge.add(save[1])
-            else:
+            elif first[1] > second[1]:
                 if first[1] in self.set_merge:
                     crdt.insert(len(crdt.blocks), first[0], timestamp=first[1], cursor=first[3])
                     first_index += 1
@@ -31,6 +31,13 @@ class Merge:
                     second_index += 1
                 save = crdt.blocks[-1]
                 self.set_merge.add(save[1])
+            else:
+                if first[3] is not None:
+                    crdt.insert(len(crdt.blocks), first[0], timestamp=first[1], cursor=first[3])
+                else:
+                    crdt.insert(len(crdt.blocks), second[0], timestamp=second[1], cursor=second[3])
+                first_index += 1
+                second_index += 1
         if first_index == len(crdt1.blocks):
             for i in range(second_index, len(crdt2.blocks)):
                 crdt.insert(len(crdt.blocks), crdt2.blocks[i][0], timestamp=crdt2.blocks[i][1], cursor=crdt2.blocks[i][3])
