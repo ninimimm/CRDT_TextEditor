@@ -1,12 +1,11 @@
 import tkinter as tk
 from tkinter import scrolledtext
-from CRDT_structure import CRDT
 
 
 class GUI:
-    def __init__(self, shared_data):
+    def __init__(self, shared_data, struct):
         self.shared_data = shared_data
-        self.crdt = CRDT("replica1")
+        self.struct = struct
         self.cursor = 0
         self.root = tk.Tk()
         self.root.title("CRDT Text Editors")
@@ -22,38 +21,40 @@ class GUI:
         self.editor.bind("<Control-KeyPress>", self.keypress)
         self.editor.bind('<Control-v>', self.paste_text or 'break')
 
-    def get_cursor_pos(self, text_widget):
-        current_index = text_widget.index(tk.INSERT)
-        text_up_to_cursor = text_widget.get("1.0", current_index)
+    def get_cursor_pos(self):
+        current_index = self.editor.index(tk.INSERT)
+        text_up_to_cursor = self.editor.get("1.0", current_index)
         return len(text_up_to_cursor)
 
     def merge_texts(self):
         self.shared_data.send = "merge"
 
     def refresh_text_widgets(self):
+        position = self.editor.index(tk.INSERT)
         self.editor.delete("1.0", tk.END)
-        editor_content = self.crdt.display()
+        editor_content = self.struct.crdt.display()
         if editor_content is not None:
             self.editor.insert("1.0", editor_content)
+        self.editor.mark_set("insert", f"{position}")
 
 
     def on_key(self, event):
         if len(event.char) == 1:
-            cursor_pos = self.get_cursor_pos(self.editor)
+            cursor_pos = self.get_cursor_pos()
             if cursor_pos - 1 != self.cursor:
-                self.crdt.cursor_insert(cursor_pos, event.char)
+                self.struct.crdt.cursor_insert(cursor_pos, event.char)
             else:
-                self.crdt.add_string(cursor_pos, event.char)
+                self.struct.crdt.add_string(cursor_pos, event.char)
             self.cursor = cursor_pos
             self.editor.insert(f"1.{cursor_pos}", event.char)
             self.merge_texts()
             return "break"
 
     def on_backspace(self, event):
-        cursor_pos = self.get_cursor_pos(self.editor)
+        cursor_pos = self.get_cursor_pos()
         if cursor_pos > 0:
             self.cursor -= 1
-            self.crdt.cursor_remove(cursor_pos)
+            self.struct.crdt.cursor_remove(cursor_pos)
             self.editor.delete(f"1.{cursor_pos}", f"1.{cursor_pos}")
             self.merge_texts()
     def copy_text(self):
@@ -66,8 +67,8 @@ class GUI:
             clipboard_text = self.root.clipboard_get()
         except tk.TclError as e:
             return
-        cursor_pos = self.get_cursor_pos(self.editor)
-        self.crdt.cursor_insert(cursor_pos, clipboard_text)
+        cursor_pos = self.get_cursor_pos()
+        self.struct.crdt.cursor_insert(cursor_pos, clipboard_text)
         self.cursor = cursor_pos + len(clipboard_text)
         self.editor.insert(tk.INSERT, clipboard_text)
         self.editor.see(tk.INSERT)
