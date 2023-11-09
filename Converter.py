@@ -1,12 +1,12 @@
 from CRDT_structure import CRDT
 from datetime import datetime
 class Converter:
-    def __init__(self, struct):
-        self.struct = struct
+    def __init__(self):
+        pass
 
-    def convert_crdt_to_str(self):
+    def convert_crdt_to_str(self, crdt):
         replace = '*&#(&^#$)(&^)*&!#^&$**!'
-        return f"{replace}".join([self.convert_block_to_str(x) for x in self.struct.crdt.blocks])
+        return f"{replace}".join([self.convert_block_to_str(x) for x in crdt.blocks])
 
     def convert_block_to_str(self, block):
         replace = '<*%*$&:-*&#$(!-!>'

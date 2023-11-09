@@ -28,11 +28,11 @@ if __name__ == "__main__":
         while True:
             if len(shared_data.send) > 0:
                 print(shared_data.send)
-                print(converter.convert_crdt_to_str())
+                print(converter.convert_crdt_to_str(class_client.crdt))
                 index, count = class_client.crdt.cursor_to_index(gui.cursor)
                 class_client.crdt.blocks[index][3] = count
                 print(class_client.crdt.blocks)
-                client.sendall(converter.convert_crdt_to_str().encode('utf-8'))
+                client.sendall(converter.convert_crdt_to_str(class_client.crdt).encode('utf-8'))
                 ans = client.recv(1024).decode('utf-8')
                 class_client.crdt = converter.convert_string_to_crdt(ans)
                 gui.refresh_text_widgets()
@@ -44,7 +44,8 @@ if __name__ == "__main__":
                         class_client.crdt.blocks[i][3] = None
                         break
                     len_cursor += class_client.crdt.lens_of_blocks[i]
-                gui.editor.mark_set("insert", f"1.{len_cursor + 1}")
+                gui.editor.mark_set("insert", f"1.{len_cursor}")
+                gui.cursor = len_cursor - 1
                 shared_data.send = ""
 
 
