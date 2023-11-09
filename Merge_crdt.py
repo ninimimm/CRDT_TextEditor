@@ -51,3 +51,5 @@ class Merge:
             if block[3] is not None:
                 block[3] = None
         crdt2.lens_of_blocks = crdt.lens_of_blocks.copy()
+        print(crdt1.blocks)
+        print(crdt2.blocks)
