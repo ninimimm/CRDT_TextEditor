@@ -36,11 +36,13 @@ class GUI:
         if editor_content is not None:
             self.editor.insert("1.0", editor_content)
         self.editor.mark_set("insert", f"{position}")
+        self.cursor = int(position.split('.')[1]) - 1
 
 
     def on_key(self, event):
         if len(event.char) == 1:
             cursor_pos = self.get_cursor_pos()
+            print(cursor_pos, self.cursor)
             if cursor_pos - 1 != self.cursor:
                 self.struct.crdt.cursor_insert(cursor_pos, event.char)
             else:

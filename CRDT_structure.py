@@ -10,12 +10,12 @@ class CRDT:
         self.blocks.append(block)
         self.lens_of_blocks.append(length)
 
-    def insert(self, index, value, timestamp=None, replica = None):
+    def insert(self, index, value, timestamp=None, replica = None, cursor = None):
         if timestamp is None:
             timestamp = datetime.datetime.now()
         if replica is None:
             replica = self.replica_id
-        self.blocks.insert(index, [list(value), timestamp, replica])
+        self.blocks.insert(index, [list(value), timestamp, replica, cursor])
         self.lens_of_blocks.insert(index, len(value))
 
 
