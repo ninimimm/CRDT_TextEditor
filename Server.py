@@ -11,7 +11,7 @@ class Server:
         self.addresses = set()
         self.addr_list = []
 
-    def merge_and_send_crdt(self, cv, data):
+    async def merge_and_send_crdt(self, cv, data):
         crdt = cv.convert_string_to_crdt(data)
         print(crdt.blocks, "который приняли")
         self.Merge.merge(crdt)
