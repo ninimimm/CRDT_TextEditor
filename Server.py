@@ -6,13 +6,12 @@ from Merge_crdt import Merge
 
 class Server:
     def __init__(self):
-        self.crdt = CRDT("server")
         self.Merge = Merge()
 
     def merge_and_send_crdt(self, address, cv, data):
         crdt = cv.convert_string_to_crdt(data)
         print(crdt.blocks, "который приняли")
-        self.Merge.merge(crdt, self.crdt)
+        self.Merge.merge(crdt)
         server.sendto(cv.convert_crdt_to_str(crdt.blocks).encode("utf-8"), address)
 
 def handle_clients():
