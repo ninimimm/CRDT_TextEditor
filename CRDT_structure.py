@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 class CRDT:
     def __init__(self, replica_id):
         self.replica_id = replica_id
-        self.blocks =[]
+        self.blocks = []
         self.lens_of_blocks = []
         self.editor = None
 

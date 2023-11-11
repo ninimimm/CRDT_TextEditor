@@ -7,17 +7,23 @@ from Merge_crdt import Merge
 class Server:
     def __init__(self):
         self.Merge = Merge()
+        self.addresses = set()
+        self.addr_list = []
 
     def merge_and_send_crdt(self, address, cv, data):
         crdt = cv.convert_string_to_crdt(data)
         print(crdt.blocks, "который приняли")
         self.Merge.merge(crdt)
-        server.sendto(cv.convert_crdt_to_str(crdt.blocks).encode("utf-8"), address)
+        for addr in server_class.addr_list:
+            server.sendto(cv.convert_crdt_to_str(crdt.blocks).encode("utf-8"), addr)
 
 def handle_clients():
     while True:
         try:
             data, address = server.recvfrom(1024)
+            if address not in server_class.addresses:
+                server_class.addresses.add(address)
+                server_class.addr_list.append(address)
             data = data.decode("utf-8")
             if len(data) > 0:
                 server_class.merge_and_send_crdt(address, converter, data)

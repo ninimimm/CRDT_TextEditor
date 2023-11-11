@@ -12,7 +12,7 @@ class Merge:
             if tuple not in self.set_merge and block[3] is None:
                     continue
             new_set_merge.add((len(block[0]), block[1]))
-            crdt.insert(len(crdt.blocks), block[0], block[1], None, block[3])
+            crdt.insert(len(crdt.blocks), block[0], block[1], block[2], block[3])
         crdt1.blocks = copy.deepcopy(crdt.blocks)
         crdt1.lens_of_blocks = crdt.lens_of_blocks.copy()
         self.set_merge = new_set_merge
