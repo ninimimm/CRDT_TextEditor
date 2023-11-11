@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 class CRDT:
     def __init__(self, replica_id):
         self.replica_id = replica_id
-        self.blocks = []
+        self.blocks =[]
         self.lens_of_blocks = []
         self.editor = None
 
@@ -41,10 +41,10 @@ class CRDT:
             self.remove(index)
             first_part, second_part = save_block[0][:count], save_block[0][count:]
             if len(second_part) > 0:
-                self.insert(index, second_part, save_block[1] + timedelta(microseconds=1))
+                self.insert(index, second_part, save_block[1] + timedelta(microseconds=1), cursor=-1)
             self.insert(index, value)
             if len(first_part) > 0:
-                self.insert(index, first_part, save_block[1])
+                self.insert(index, first_part, save_block[1], cursor=-1)
         else:
             self.insert(index, value)
 
@@ -58,8 +58,11 @@ class CRDT:
         index, count = self.cursor_to_index(cursor)
         print(index, count, "add string")
         if index < len(self.blocks):
-            self.blocks[index][0] = self.blocks[index][0][:count] + list(string) + self.blocks[index][0][count:]
-            self.lens_of_blocks[index] += len(string)
+            if count == 0:
+                self.insert(index, list(string), datetime.now())
+            else:
+                self.blocks[index][0] += list(string)
+                self.lens_of_blocks[index] += len(string)
         else:
             self.insert(index, list(string), datetime.now())
 

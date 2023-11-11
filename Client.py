@@ -24,7 +24,7 @@ if __name__ == "__main__":
         gui.root.mainloop()
     def connection():
         client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        ip_port = ('127.0.0.1', 8080)
+        ip_port = ('178.154.244.233', 8080)
         while True:
             if not shared_data.send.empty():
                 while not shared_data.send.empty():
@@ -41,7 +41,7 @@ if __name__ == "__main__":
                     len_cursor = 0
                     print(class_client.crdt.blocks)
                     for i in range(len(class_client.crdt.blocks)):
-                        if class_client.crdt.blocks[i][3] is not None:
+                        if class_client.crdt.blocks[i][3] is not None and class_client.crdt.blocks[i][3] != -1:
                             len_cursor += class_client.crdt.blocks[i][3]
                             class_client.crdt.blocks[i][3] = None
                             break
