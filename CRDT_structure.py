@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime, timedelta
 class CRDT:
     def __init__(self, replica_id):
         self.replica_id = replica_id
@@ -12,7 +12,7 @@ class CRDT:
 
     def insert(self, index, value, timestamp=None, replica = None, cursor = None):
         if timestamp is None:
-            timestamp = datetime.datetime.now()
+            timestamp = datetime.now()
         if replica is None:
             replica = self.replica_id
         self.blocks.insert(index, [list(value), timestamp, replica, cursor])
@@ -41,7 +41,7 @@ class CRDT:
             self.remove(index)
             first_part, second_part = save_block[0][:count], save_block[0][count:]
             if len(second_part) > 0:
-                self.insert(index, second_part, save_block[1])
+                self.insert(index, second_part, save_block[1] + timedelta(microseconds=1))
             self.insert(index, value)
             if len(first_part) > 0:
                 self.insert(index, first_part, save_block[1])
@@ -56,11 +56,12 @@ class CRDT:
 
     def add_string(self, cursor, string):
         index, count = self.cursor_to_index(cursor)
+        print(index, count, "add string")
         if index < len(self.blocks):
-            self.blocks[index][0] = self.blocks[index][0] + list(string)
+            self.blocks[index][0] = self.blocks[index][0][:count] + list(string) + self.blocks[index][0][count:]
             self.lens_of_blocks[index] += len(string)
         else:
-            self.insert(index, list(string), datetime.datetime.now())
+            self.insert(index, list(string), datetime.now())
 
     def display(self):
         return ''.join([''.join(block[0]) for block in self.blocks])

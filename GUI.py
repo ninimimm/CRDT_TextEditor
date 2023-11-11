@@ -27,7 +27,7 @@ class GUI:
         return len(text_up_to_cursor)
 
     def merge_texts(self):
-        self.shared_data.send = "merge"
+        self.shared_data.send.put(self.struct.crdt.blocks)
 
     def refresh_text_widgets(self):
         position = self.editor.index(tk.INSERT)
@@ -42,7 +42,6 @@ class GUI:
     def on_key(self, event):
         if len(event.char) == 1:
             cursor_pos = self.get_cursor_pos()
-            print(cursor_pos, self.cursor)
             if cursor_pos - 1 != self.cursor:
                 self.struct.crdt.cursor_insert(cursor_pos, event.char)
             else:
@@ -59,6 +58,7 @@ class GUI:
             self.struct.crdt.cursor_remove(cursor_pos)
             self.editor.delete(f"1.{cursor_pos}", f"1.{cursor_pos}")
             self.merge_texts()
+
     def copy_text(self):
         selected_text = self.editor.selection_get()
         self.root.clipboard_clear()

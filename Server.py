@@ -11,9 +11,9 @@ class Server:
 
     def merge_and_send_crdt(self, address, cv, data):
         crdt = cv.convert_string_to_crdt(data)
+        print(crdt.blocks, "который приняли")
         self.Merge.merge(crdt, self.crdt)
-        print(self.crdt.blocks)
-        server.sendto(cv.convert_crdt_to_str(crdt).encode("utf-8"), address)
+        server.sendto(cv.convert_crdt_to_str(crdt.blocks).encode("utf-8"), address)
 
 def handle_clients():
     while True:
