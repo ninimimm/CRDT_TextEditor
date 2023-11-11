@@ -3,6 +3,7 @@ from Converter import Converter
 import threading
 from CRDT_structure import CRDT
 from Merge_crdt import Merge
+import asyncio
 
 class Server:
     def __init__(self):
@@ -10,13 +11,15 @@ class Server:
         self.addresses = set()
         self.addr_list = []
 
-    def merge_and_send_crdt(self, address, cv, data):
+    def merge_and_send_crdt(self, cv, data):
         crdt = cv.convert_string_to_crdt(data)
         print(crdt.blocks, "который приняли")
         self.Merge.merge(crdt)
-        for addr in server_class.addr_list:
-            server.sendto(cv.convert_crdt_to_str(crdt.blocks).encode("utf-8"), addr)
+        await asyncio.gather(*[self.send(cv, crdt, addr) for addr in server_class.addr_list])
 
+
+    async def send(self, cv, crdt, addr):
+        server.sendto(cv.convert_crdt_to_str(crdt.blocks).encode("utf-8"), addr)
 def handle_clients():
     while True:
         try:
@@ -26,7 +29,7 @@ def handle_clients():
                 server_class.addr_list.append(address)
             data = data.decode("utf-8")
             if len(data) > 0:
-                server_class.merge_and_send_crdt(address, converter, data)
+                server_class.merge_and_send_crdt(converter, data)
         except (ConnectionResetError, OSError) as Ex:
             print(Ex)
             print("Клиент отключился")
