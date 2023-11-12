@@ -5,12 +5,10 @@ import threading
 from GUI import GUI
 from Converter import Converter
 from CRDT_structure import CRDT
-from Merge_crdt import Merge
 
 class Client:
     def __init__(self):
         self.crdt = CRDT("replica2")
-        self.Merge = Merge()
 
 class SharedData:
     def __init__(self):
@@ -18,7 +16,6 @@ class SharedData:
 
 def update_cursor():
     len_cursor = 0
-    print(class_client.crdt.blocks)
     for i in range(len(class_client.crdt.blocks)):
         if class_client.crdt.blocks[i][3] is not None and class_client.crdt.blocks[i][3] != -1 \
                 and class_client.crdt.blocks[i][2] == "replica2":
@@ -54,10 +51,9 @@ if __name__ == "__main__":
         while True:
             if not shared_data.send.empty():
                 while not shared_data.send.empty():
-                    index, count = class_client.crdt.cursor_to_index(gui.cursor + 1)
+                    index, count = class_client.crdt.cursor_to_index(gui.get_cursor_pos())
                     if len(class_client.crdt.blocks) > 0:
                         class_client.crdt.blocks[index][3] = count
-                    print(class_client.crdt.blocks)
                     client.sendto(converter.convert_crdt_to_str(shared_data.send.get()).encode('utf-8'), ip_port)
                     ans, _ = client.recvfrom(1024)
                     update_crdt(ans)

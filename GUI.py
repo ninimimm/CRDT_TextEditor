@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import scrolledtext
+import time
 
 
 class GUI:
@@ -13,7 +14,6 @@ class GUI:
         self.editor = scrolledtext.ScrolledText(self.root, width=40, height=10)
         self.full_text_editor()
 
-
     def full_text_editor(self):
         self.editor.pack(side="left", fill="both", expand=True)
         self.editor.bind("<Key>", lambda event: self.on_key(event))
@@ -23,6 +23,7 @@ class GUI:
 
     def get_cursor_pos(self):
         current_index = self.editor.index(tk.INSERT)
+        print(current_index)
         text_up_to_cursor = self.editor.get("1.0", current_index)
         return len(text_up_to_cursor)
 
@@ -38,10 +39,10 @@ class GUI:
         self.editor.mark_set("insert", f"{position}")
         self.cursor = int(position.split('.')[1]) - 1
 
-
     def on_key(self, event):
         if len(event.char) == 1:
             cursor_pos = self.get_cursor_pos()
+            print(cursor_pos, "pos")
             if cursor_pos - 1 != self.cursor:
                 self.struct.crdt.cursor_insert(cursor_pos, event.char)
             else:

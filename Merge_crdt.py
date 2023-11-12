@@ -1,9 +1,9 @@
 from CRDT_structure import CRDT
 import copy
 class Merge:
-    def __init__(self, server_blocks):
+    def __init__(self):
         self.set_merge = set()
-        self.server_blocks = server_blocks
+        self.server_blocks = []
         pass
 
     def merge(self, crdt1):
