@@ -41,12 +41,14 @@ class CRDT:
             self.remove(index)
             first_part, second_part = save_block[0][:count], save_block[0][count:]
             if len(second_part) > 0:
-                self.insert(index, second_part, save_block[1] + timedelta(microseconds=1), cursor=-1)
+                self.insert(index, second_part, save_block[1] + timedelta(microseconds=1), cursor=-1, replica=save_block[2])
             self.insert(index, value)
             if len(first_part) > 0:
-                self.insert(index, first_part, save_block[1], cursor=-1)
+                self.insert(index, first_part, save_block[1], cursor=-1, replica=save_block[2])
         else:
             self.insert(index, value)
+        print(self.replica_id)
+        print(self.blocks, "cursor index")
 
     def cursor_remove(self, cursor):
         index, count = self.cursor_to_index(cursor)
@@ -56,7 +58,6 @@ class CRDT:
 
     def add_string(self, cursor, string):
         index, count = self.cursor_to_index(cursor)
-        print(index, count, "add string")
         if index < len(self.blocks):
             if count == 0:
                 self.insert(index, list(string), datetime.now())
