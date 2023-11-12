@@ -27,6 +27,7 @@ class GUI:
         return len(text_up_to_cursor)
 
     def merge_texts(self):
+        print(self.struct.crdt.blocks, "добавляем")
         self.shared_data.send.put(self.struct.crdt.blocks)
 
     def refresh_text_widgets(self):

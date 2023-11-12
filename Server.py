@@ -7,7 +7,7 @@ class ServerProtocol(asyncio.DatagramProtocol):
         self.server = server
 
     def connection_made(self, transport):
-        self.transport = transport
+        self.server.transport = transport
         self.server.set_transport(transport)  # Передаем transport в Server
 
     def datagram_received(self, data, addr):
@@ -38,9 +38,10 @@ class Server:
 
         data = data.decode("utf-8")
         if len(data) > 0:
-            await self.merge_and_send_crdt(data, addr)
+            await self.merge_and_send_crdt(data)
 
-    async def merge_and_send_crdt(self, data, addr):
+    async def merge_and_send_crdt(self, data):
+        print(data)
         crdt = self.converter.convert_string_to_crdt(data)
         print(crdt.blocks, "который приняли")
         self.merge.merge(crdt)
