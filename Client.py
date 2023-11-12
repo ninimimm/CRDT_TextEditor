@@ -21,7 +21,7 @@ def update_cursor():
     print(class_client.crdt.blocks)
     for i in range(len(class_client.crdt.blocks)):
         if class_client.crdt.blocks[i][3] is not None and class_client.crdt.blocks[i][3] != -1 \
-                and class_client.crdt.blocks[i][1] == "replica2":
+                and class_client.crdt.blocks[i][2] == "replica2":
             len_cursor += class_client.crdt.blocks[i][3]
             class_client.crdt.blocks[i][3] = None
             break
@@ -34,6 +34,11 @@ def update_crdt(data):
     gui.refresh_text_widgets()
     update_cursor()
 
+def start_connection(client, ip_port):
+    client.sendto("connect".encode('utf-8'), ip_port)
+    ans, _ = client.recvfrom(1024)
+    update_crdt(ans)
+
 if __name__ == "__main__":
     class_client = Client()
     converter = Converter(class_client.crdt.replica_id)
@@ -44,6 +49,8 @@ if __name__ == "__main__":
     def connection():
         client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         ip_port = ('178.154.244.233', 8080)
+
+        start_connection(client, ip_port)
         while True:
             if not shared_data.send.empty():
                 while not shared_data.send.empty():

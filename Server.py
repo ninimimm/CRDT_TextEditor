@@ -22,10 +22,11 @@ class ServerProtocol(asyncio.DatagramProtocol):
 
 class Server:
     def __init__(self):
-        self.merge = Merge()
+        self.server_blocks = []
+        self.merge = Merge(self.server_blocks)
         self.addresses = set()
         self.addr_list = []
-        self.converter = Converter()
+        self.converter = Converter("")
         self.transport = None  # Инициализируем transport как None
 
     def set_transport(self, transport):
@@ -38,7 +39,10 @@ class Server:
 
         data = data.decode("utf-8")
         if len(data) > 0:
-            await self.merge_and_send_crdt(data)
+            if data == "connect":
+                await self.send(self.converter.convert_crdt_to_str(self.server_blocks).encode("utf-8"), addr)
+            else:
+                await self.merge_and_send_crdt(data)
 
     async def merge_and_send_crdt(self, data):
         print(data)
