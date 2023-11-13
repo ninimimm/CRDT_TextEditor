@@ -1,10 +1,13 @@
 from datetime import datetime, timedelta
+import threading
 class CRDT:
     def __init__(self, replica_id):
+        self.gui = None
         self.replica_id = replica_id
         self.blocks = []
         self.lens_of_blocks = []
         self.editor = None
+        self.lock = threading.Lock()
 
     def append(self, block, length):
         self.blocks.append(block)
@@ -23,47 +26,50 @@ class CRDT:
         self.blocks.pop(index)
         self.lens_of_blocks.pop(index)
 
-    def cursor_to_index(self, cursor):
+    def cursor_to_index(self, cursor, blocks, lens_of_blocks):
         index = -1
         if cursor == 0:
             return (0, 0)
-        while cursor > 0 and len(self.blocks) > 0:
+        while cursor > 0 and len(blocks) > 0:
             index += 1
-            if index == len(self.blocks):
+            if index == len(blocks):
                 break
-            cursor -= self.lens_of_blocks[index]
-        return (index, cursor + self.lens_of_blocks[index])
+            cursor -= lens_of_blocks[index]
+        return index, cursor + lens_of_blocks[index]
 
     def cursor_insert(self, cursor, value):
-        index, count = self.cursor_to_index(cursor)
-        if len(self.blocks) > index:
-            save_block = self.blocks[index].copy()
-            self.remove(index)
-            first_part, second_part = save_block[0][:count], save_block[0][count:]
-            if len(second_part) > 0:
-                self.insert(index, second_part, save_block[1] + timedelta(microseconds=1), cursor=-1, replica=save_block[2])
-            self.insert(index, value)
-            if len(first_part) > 0:
-                self.insert(index, first_part, save_block[1], cursor=-1, replica=save_block[2])
-        else:
-            self.insert(index, value)
+        with self.lock:
+            index, count = self.cursor_to_index(cursor, self.blocks, self.lens_of_blocks)
+            if len(self.blocks) > index:
+                save_block = self.blocks[index].copy()
+                self.remove(index)
+                first_part, second_part = save_block[0][:count], save_block[0][count:]
+                if len(second_part) > 0:
+                    self.insert(index, second_part, save_block[1] + timedelta(microseconds=1), cursor=-1, replica=save_block[2])
+                self.insert(index, value)
+                if len(first_part) > 0:
+                    self.insert(index, first_part, save_block[1], cursor=-1, replica=save_block[2])
+            else:
+                self.insert(index, value)
 
     def cursor_remove(self, cursor):
-        index, count = self.cursor_to_index(cursor)
-        self.blocks[index][0].pop(count - 1)
-        if len(self.blocks[index][0]) == 0:
-            self.remove(index)
+        with self.lock:
+            index, count = self.cursor_to_index(cursor, self.blocks, self.lens_of_blocks)
+            self.blocks[index][0].pop(count - 1)
+            if len(self.blocks[index][0]) == 0:
+                self.remove(index)
 
     def add_string(self, cursor, string):
-        index, count = self.cursor_to_index(cursor)
-        if index < len(self.blocks):
-            if count == 0:
-                self.insert(index, list(string), datetime.now())
+        with self.lock:
+            index, count = self.cursor_to_index(cursor, self.blocks, self.lens_of_blocks)
+            if index < len(self.blocks):
+                if count == 0:
+                    self.insert(index, list(string), datetime.now())
+                else:
+                    self.blocks[index][0] += list(string)
+                    self.lens_of_blocks[index] += len(string)
             else:
-                self.blocks[index][0] += list(string)
-                self.lens_of_blocks[index] += len(string)
-        else:
-            self.insert(index, list(string), datetime.now())
+                self.insert(index, list(string), datetime.now())
 
     def display(self):
         return ''.join([''.join(block[0]) for block in self.blocks])

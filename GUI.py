@@ -7,16 +7,12 @@ class GUI:
     def __init__(self, shared_data, struct):
         self.shared_data = shared_data
         self.struct = struct
-        self.cursor = 0
-        self.last_cursor = 0
-        self.len_text = 0
+        self.last_cursor = -1
         self.root = tk.Tk()
         self.root.title("CRDT Text Editors")
 
         self.editor = scrolledtext.ScrolledText(self.root, width=40, height=10)
         self.full_text_editor()
-
-        self.lock = threading.Lock()
         self.input_queue = Queue()
 
     def full_text_editor(self):
@@ -25,38 +21,32 @@ class GUI:
         self.editor.bind("<BackSpace>", self.on_backspace)
         # self.editor.bind("<Control-KeyPress>", self.keypress)
         # self.editor.bind('<Control-v>', self.paste_text or 'break')
-        self.editor.bind("<Left>", self.move_cursor_left)
-        self.editor.bind("<Right>", self.move_cursor_right)
 
-    def move_cursor_left(self):
-        if self.cursor > 0:
-            self.cursor -= 1
+    def get_cursor_pos(self):
+        current_index = self.editor.index(tk.INSERT)
+        return int(current_index.split('.')[1])
 
-    def move_cursor_right(self):
-        if self.cursor < self.len_text:
-            self.cursor += 1
-
-    def merge_texts(self):
-        self.shared_data.send.put(self.struct.crdt.blocks)
+    def merge_texts(self, cursor, blocks, lens_of_blocks):
+        self.shared_data.send.put([cursor, blocks, lens_of_blocks])
 
     def on_key(self, event):
         if len(event.char) == 1:
-
-            if self.last_cursor - 1 != self.cursor or self.cursor == 0:
-                self.struct.crdt.cursor_insert(self.cursor, event.char)
+            with self.struct.crdt.lock:
+                cursor = self.get_cursor_pos()
+            print(cursor, "ON KEY", self.last_cursor)
+            if self.last_cursor != cursor - 1 or cursor == 0:
+                self.struct.crdt.cursor_insert(cursor, event.char)
             else:
-                self.struct.crdt.add_string(self.last_cursor, event.char)
-            self.last_cursor = self.cursor
-            self.cursor += 1
-            self.merge_texts()
+                self.struct.crdt.add_string(cursor, event.char)
+            self.last_cursor = cursor
+            self.merge_texts(cursor + 1, self.struct.crdt.blocks, self.struct.crdt.lens_of_blocks)
 
     def on_backspace(self, event):
-        if self.cursor > 0:
-            self.struct.crdt.cursor_remove(self.cursor - 1)
-            self.editor.delete(f"1.{self.cursor}", f"1.{self.cursor}")
-            self.cursor -= 1
-            self.last_cursor = self.cursor - 1
-            self.merge_texts()
+        cursor = self.get_cursor_pos()
+        if cursor > 0:
+            self.struct.crdt.cursor_remove(cursor)
+            self.last_cursor = cursor - 2
+            self.merge_texts(cursor - 1, self.struct.crdt.blocks, self.struct.crdt.lens_of_blocks)
 
     # def copy_text(self):
     #     selected_text = self.editor.selection_get()
