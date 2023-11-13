@@ -47,8 +47,6 @@ class CRDT:
                 self.insert(index, first_part, save_block[1], cursor=-1, replica=save_block[2])
         else:
             self.insert(index, value)
-        print(self.replica_id)
-        print(self.blocks, "cursor index")
 
     def cursor_remove(self, cursor):
         index, count = self.cursor_to_index(cursor)
