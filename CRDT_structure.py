@@ -55,9 +55,25 @@ class CRDT:
     def cursor_remove(self, cursor):
         with self.lock:
             index, count = self.cursor_to_index(cursor, self.blocks, self.lens_of_blocks)
-            self.blocks[index][0].pop(count - 1)
-            if len(self.blocks[index][0]) == 0:
+            if count == len(self.blocks[index][0]):
+                self.blocks[index][0].pop(count - 1)
+                if len(self.blocks[index][0]) == 0:
+                    self.remove(index)
+            else:
+                print(index, count, self.blocks)
+                save_block = self.blocks[index].copy()
                 self.remove(index)
+                first_part, second_part = save_block[0][:count - 1], save_block[0][count:]
+                print(first_part, second_part)
+                print(first_part, second_part)
+                if len(second_part) > 0:
+                    self.insert(index, second_part, cursor=1)
+                print(self.blocks)
+                if len(first_part) > 0:
+                    self.insert(index, first_part, cursor=len(first_part))
+                print(self.blocks)
+
+
 
     def add_string(self, cursor, string):
         with self.lock:
