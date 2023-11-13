@@ -14,7 +14,7 @@ class Merge:
                 print("не добавляем", crdt1.blocks[i][0])
                 continue
             if i > 0 and crdt1.blocks[i][3] is not None and crdt1.blocks[i - 1][3] is not None\
-                    and crdt1.blocks[i][2] == crdt1.blocks[i - 1][2]:
+                    and crdt1.blocks[i - 1][3] != -1 and crdt1.blocks[i][2] == crdt1.blocks[i - 1][2]:
                 crdt1.blocks[i][3] = None
             print("добавляем", crdt1.blocks[i][0])
             new_set_merge.add((len(crdt1.blocks[i][0]), crdt1.blocks[i][1]))
