@@ -1,8 +1,9 @@
 from datetime import datetime, timedelta
 import threading
+
+
 class CRDT:
     def __init__(self, replica_id):
-        self.gui = None
         self.replica_id = replica_id
         self.blocks = []
         self.lens_of_blocks = []

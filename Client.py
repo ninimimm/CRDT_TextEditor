@@ -64,12 +64,13 @@ if __name__ == "__main__":
     converter = Converter(class_client.crdt.replica_id)
     shared_data = SharedData()
     gui = GUI(shared_data, class_client)
-    class_client.crdt.gui = gui
+
     def run_start():
         gui.root.mainloop()
+
     def connection():
         client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        ip_port = ('127.0.0.1', 8080)
+        ip_port = ('178.154.244.233', 8080)
 
         start_connection(client, ip_port)
         while True:

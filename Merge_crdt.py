@@ -13,10 +13,8 @@ class Merge:
             if (len(crdt1.blocks[i][0]), crdt1.blocks[i][1]) not in self.set_merge and crdt1.blocks[i][3] is None:
                 print("не добавляем", crdt1.blocks[i][0])
                 continue
-            if crdt1.blocks[i][3] is not None:
-                if i + 1 < len(crdt1.blocks) and crdt1.blocks[i + 1][3] is not None \
-                        and crdt1.blocks[i + 1][2] == "replica2":
-                    crdt1.blocks[i + 1][3] = None
+            if i > 0 and crdt1.blocks[i][3] is not None and crdt1.blocks[i - 1][3] is not None:
+                crdt1.blocks[i][3] = None
             print("добавляем", crdt1.blocks[i][0])
             new_set_merge.add((len(crdt1.blocks[i][0]), crdt1.blocks[i][1]))
             crdt_blocks.append(crdt1.blocks[i])
