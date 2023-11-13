@@ -20,15 +20,17 @@ class SharedData:
 def update_cursor(cur):
     with class_client.crdt.lock:
         len_cursor = 0
+        flag = False
         for i in range(len(class_client.crdt.blocks)):
             if class_client.crdt.blocks[i][3] is not None and class_client.crdt.blocks[i][3] != -1 \
                     and class_client.crdt.blocks[i][2] == "replica2":
+                flag = True
                 len_cursor += class_client.crdt.blocks[i][3]
                 class_client.crdt.blocks[i][3] = None
                 break
             len_cursor += class_client.crdt.lens_of_blocks[i]
         print(cur, len_cursor, "inside")
-        if cur != len_cursor:
+        if cur != len_cursor and flag:
             gui.editor.mark_set("insert", f"1.{len_cursor}")
             if len_cursor > 1:
                 gui.last_cursor = len_cursor - 1
