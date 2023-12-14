@@ -38,9 +38,11 @@ def update_cursor(cur):
 
 def update_crdt(data):
     with class_client.crdt.lock:
-        new_crdt = converter.convert_string_to_crdt(data)
+        replica, new_crdt = converter.convert_string_to_crdt(data)
         cur = gui.get_cursor_pos()
-        if data != "empty":
+        if data != "":
+            if data != "empty":
+                replica, data = data.split("!1#3$4№%")
             replace_text(''.join(re.findall(r"(?:\*\&#\(&|^)(.+?)#\$\(!\-\!\>", data)), cur)
         class_client.crdt = new_crdt
         update_cursor(cur)
@@ -70,7 +72,7 @@ if __name__ == "__main__":
 
     def connection():
         client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        ip_port = ('178.154.244.233', 8080)
+        ip_port = ('158.160.7.179', 8080)
 
         start_connection(client, ip_port)
         while True:

@@ -5,7 +5,7 @@ class Converter:
         self.replica = replica
 
     def convert_crdt_to_str(self, crdt_blocks):
-        return "*&#(&".join([self.convert_block_to_str(x) for x in crdt_blocks])\
+        return f"{self.replica}!1#3$4№%" + "*&#(&".join([self.convert_block_to_str(x) for x in crdt_blocks])\
             if len(crdt_blocks) > 0 else "empty"
 
     def convert_block_to_str(self, block):
@@ -14,14 +14,16 @@ class Converter:
 
     def convert_string_to_crdt(self, data_string):
         replace = '*&#(&'
-        crdt1 = CRDT(self.replica)
         if data_string == "empty":
-            return crdt1
+            return ("replica2", CRDT("replica2"))
+        replica, data_string = data_string.split("!1#3$4№%")
+        print(data_string)
+        crdt1 = CRDT(replica)
         blocks_str = data_string.split(replace)
         for block_str in blocks_str:
             block = self.convert_string_to_block(block_str)
             crdt1.append(block, len(block[0]))
-        return crdt1
+        return (replica, crdt1)
 
     def convert_string_to_block(self, string):
         value, time, replica, cursor = string.split('#$(!-!>')

@@ -35,7 +35,7 @@ class GUI:
                 cursor = self.get_cursor_pos()
             print(cursor, "ON KEY", self.last_cursor)
             if self.last_cursor != cursor - 1 or cursor == 0:
-                self.struct.crdt.cursor_insert(cursor, event.char)
+                self.struct.crdt.cursor_insert(cursor, event.char, self.struct.crdt.replica_id)
             else:
                 self.struct.crdt.add_string(cursor, event.char)
             self.last_cursor = cursor

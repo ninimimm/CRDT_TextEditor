@@ -38,18 +38,19 @@ class CRDT:
             cursor -= lens_of_blocks[index]
         return index, cursor + lens_of_blocks[index]
 
-    def cursor_insert(self, cursor, value):
+    def cursor_insert(self, cursor, value, replica_id):
         with self.lock:
             index, count = self.cursor_to_index(cursor, self.blocks, self.lens_of_blocks)
             if len(self.blocks) > index:
                 save_block = self.blocks[index].copy()
                 self.remove(index)
                 first_part, second_part = save_block[0][:count], save_block[0][count:]
+                cursor_pos = len(first_part) if replica_id != save_block[2] else -1
                 if len(second_part) > 0:
                     self.insert(index, second_part, save_block[1] + timedelta(microseconds=1), cursor=-1, replica=save_block[2])
                 self.insert(index, value)
                 if len(first_part) > 0:
-                    self.insert(index, first_part, save_block[1], cursor=-1, replica=save_block[2])
+                    self.insert(index, first_part, save_block[1], cursor=cursor_pos, replica=save_block[2])
             else:
                 self.insert(index, value)
 
