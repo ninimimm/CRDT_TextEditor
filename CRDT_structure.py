@@ -28,6 +28,9 @@ class Block:
     time: datetime
     hash: int
 
+    def __hash__(self):
+        return self.hash
+
 
 class CRDT:
     def __init__(self, replica_id):
