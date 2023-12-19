@@ -20,17 +20,15 @@ class SharedData:
 def update_cursor(cur):
     with class_client.crdt.lock:
         len_cursor = 0
-        flag = False
+        max_time, index = 0, -1
         for i in range(len(class_client.crdt.blocks)):
-            if class_client.crdt.blocks[i][3] is not None and class_client.crdt.blocks[i][3] != -1 \
-                    and class_client.crdt.blocks[i][2] == "replica2":
-                flag = True
-                len_cursor += class_client.crdt.blocks[i][3]
-                class_client.crdt.blocks[i][3] = None
-                break
-            len_cursor += class_client.crdt.lens_of_blocks[i]
-        print(cur, len_cursor, "inside")
-        if cur != len_cursor and flag:
+            if class_client.crdt.blocks[i].cursor is not None\
+                    and class_client.crdt.blocks[i].replica == "replica2":
+                if class_client.crdt.blocks[i].time > max_time:
+                    max_time = class_client.crdt.blocks[i].timef
+                    index = i
+            len_cursor += len(class_client.crdt.blocks[i].value)
+        if cur != len_cursor and index != -1:
             gui.editor.mark_set("insert", f"1.{len_cursor}")
             if len_cursor > 1:
                 gui.last_cursor = len_cursor - 1
@@ -80,7 +78,7 @@ if __name__ == "__main__":
                         cursor, blocks, lens_of_blocks = shared_data.send.get()
                         index, count = class_client.crdt.cursor_to_index(cursor, blocks, lens_of_blocks)
                         if len(class_client.crdt.blocks) > 0:
-                            class_client.crdt.blocks[index][3] = count
+                            class_client.crdt.blocks[index].cursor = count
                         client.sendto(converter.convert_crdt_to_str(blocks).encode('utf-8'), ip_port)
             ready = select.select([client], [], [], 0.05)
             if ready[0]:

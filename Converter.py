@@ -1,5 +1,6 @@
 from CRDT_structure import CRDT
 from datetime import datetime
+from CRDT_structure import Block, Range
 class Converter:
     def __init__(self, replica):
         self.replica = replica
@@ -10,7 +11,8 @@ class Converter:
 
     def convert_block_to_str(self, block):
         replace = '#$(!-!>'
-        return f"{''.join(block[0])}{replace}{block[1].strftime('%m/%d/%y %H:%M:%S.%f')}{replace}{block[2]}{replace}{block[3]}"
+        return f"{''.join(block.value)}{replace}{block.replica}{replace}{block.cursor}{replace}" \
+               f"{block.Range.start},{block.Range.finish}{replace}{block.time.strftime('%m/%d/%y %H:%M:%S.%f')}"
 
     def convert_string_to_crdt(self, data_string):
         replace = '*&#(&'
@@ -24,5 +26,7 @@ class Converter:
         return crdt1
 
     def convert_string_to_block(self, string):
-        value, time, replica, cursor = string.split('#$(!-!>')
-        return [list(value), datetime.strptime(time, '%m/%d/%y %H:%M:%S.%f'), replica, None if cursor == "None" else int(cursor)]
+        value, replica, cursor, range, time = string.split('#$(!-!>')
+        start, finish = range.split(',')
+        return Block(value=list(value), replica=replica, cursor=None if cursor == "None" else int(cursor),
+                     range=Range(start=int(start), finish=int(finish)), time=datetime.strptime(time, '%m/%d/%y %H:%M:%S.%f'))
