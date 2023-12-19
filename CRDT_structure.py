@@ -80,9 +80,9 @@ class CRDT:
                                 range=Range(start=save_block.Range.start, finish=save_block.Range.start + count),
                                 hash=save_block.hash)
                 else:
-                    self.insert(index, value=list(value), cursor=len(value), range=Range(start=0, finish=len(value)))
+                    self.insert(index, value=list(value), replica=self.replica_id, cursor=len(value), range=Range(start=0, finish=len(value)))
             else:
-                self.insert(index, value=list(value), cursor=len(value), range=Range(start=0, finish=len(value)))
+                self.insert(index, value=list(value), replica=self.replica_id, cursor=len(value), range=Range(start=0, finish=len(value)))
 
     def cursor_remove(self, cursor):
         with self.lock:

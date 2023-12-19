@@ -28,6 +28,7 @@ def update_cursor(cur):
                 if class_client.crdt.blocks[i].time > max_time:
                     max_time = class_client.crdt.blocks[i].time
                     index = i
+            class_client.crdt.blocks[i].replica = None
             len_cursor += len(class_client.crdt.blocks[i].value)
         if cur != len_cursor and index != -1:
             gui.editor.mark_set("insert", f"1.{len_cursor}")
@@ -69,7 +70,7 @@ if __name__ == "__main__":
 
     def connection():
         client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        ip_port = ('127.0.0.1', 8080)
+        ip_port = ('158.160.7.179', 8080)
 
         start_connection(client, ip_port)
         while True:
