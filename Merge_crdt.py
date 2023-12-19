@@ -14,12 +14,14 @@ class Merge:
             if enum1[0].Range < enum2[0].Range:
                 for i in range(len(enum1[0].value)):
                     enum2[0].value.pop(0)
+                    enum2[0].cursor -= 1
                 ans_enum.append(enum1.pop(0))
                 while enum1 and enum1[0].hash != hash:
                     ans_enum.append(enum1.pop(0))
             elif enum1[0].Range > enum2[0].Range:
                 for i in range(len(enum2[0].value)):
                     enum1[0].value.pop(0)
+                    enum1[0].cursor -= 1
                 ans_enum.append(enum2.pop(0))
                 while enum2 and enum2[0].hash != hash:
                     ans_enum.append(enum2.pop(0))
@@ -43,7 +45,7 @@ class Merge:
                 result.append(block)
             else:
                 if result[-1].time < block.time:
-                    result[-1].cursor = len(result[-1].value) + block.cursor - 1
+                    result[-1].cursor = len(result[-1].value) + block.cursor
                     result[-1].time = block.time
                 result[-1].value += block.value
                 result[-1].Range.finish += len(block.value)
