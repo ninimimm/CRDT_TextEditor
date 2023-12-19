@@ -29,4 +29,4 @@ class Converter:
         value, replica, cursor, range, time = string.split('#$(!-!>')
         start, finish = range.split(',')
         return Block(value=list(value), replica=replica, cursor=None if cursor == "None" else int(cursor),
-                     range=Range(start=int(start), finish=int(finish)), time=datetime.strptime(time, '%m/%d/%y %H:%M:%S.%f'))
+                     Range=Range(start=int(start), finish=int(finish)), time=datetime.strptime(time, '%m/%d/%y %H:%M:%S.%f'))

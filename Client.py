@@ -68,7 +68,7 @@ if __name__ == "__main__":
 
     def connection():
         client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        ip_port = ('178.154.244.233', 8080)
+        ip_port = ('158.160.7.179', 8080)
 
         start_connection(client, ip_port)
         while True:
