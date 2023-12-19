@@ -42,9 +42,10 @@ class CRDT:
         self.blocks.append(block)
         self.lens_of_blocks.append(length)
 
-    def insert(self, index, value, replica=None, cursor=None, range=None, hash=None, time=datetime.now()):
+    def insert(self, index, value, replica=None, cursor=None, range=None, hash=None, time=None):
         self.blocks.insert(index, Block(value=value, replica=replica, cursor=cursor,
-                                        Range=Range(start=range.start, finish=range.finish), time=time,
+                                        Range=Range(start=range.start, finish=range.finish),
+                                        time=datetime.now() if time is None else time,
                                         hash=hash if hash is not None else self.current_hash))
         self.current_hash += 1
         self.lens_of_blocks.insert(index, len(value))
