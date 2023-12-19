@@ -53,9 +53,9 @@ class Merge:
                 new_blocks.put(person_blocks.pop(0))
             else:
                 enum1, enum2 = [], []
+                hash = person_blocks[0].hash
                 while person_blocks and person_blocks[0].replica is not None:
                     enum1.append(person_blocks.pop(0))
-                hash = person_blocks[0].hash
                 while self.server_blocks and self.server_blocks[0].hash != hash:
                     merge_blocks.append(self.server_blocks.pop(0))
                 while person_blocks and person_blocks[0].replica is not None:
