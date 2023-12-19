@@ -63,7 +63,7 @@ class Merge:
                     merge_blocks.append(self.server_blocks.pop(0))
                 while self.server_blocks and self.server_blocks[0].replica is not None:
                     enum2.append(self.server_blocks.pop(0))
-                merge_blocks.append(self.merge_enumeration(enum1, enum2))
+                merge_blocks += self.merge_enumeration(enum1, enum2)
         merge_blocks += self.server_blocks
         while not new_blocks.empty():
             merge_blocks.append(new_blocks.get())
