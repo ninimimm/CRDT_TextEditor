@@ -49,7 +49,8 @@ class Merge:
                 result.append(block)
             else:
                 if result[-1].time < block.time:
-                    result[-1].cursor = len(result[-1].value) + block.cursor
+                    if result[-1].cursor is not None:
+                        result[-1].cursor = len(result[-1].value) + block.cursor
                     result[-1].time = block.time
                 result[-1].value += block.value
                 result[-1].Range.finish += len(block.value)
