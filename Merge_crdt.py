@@ -56,15 +56,15 @@ class Merge:
                 j = i
                 enum1 = []
                 enum2 = []
-                while person_blocks[j].replica is not None:
+                while person_blocks[j].replica is not None and j < len(person_blocks):
                     enum1.append(person_blocks.pop(j))
                     j += 1
                 j = 0
                 hash = person_blocks[i].hash
-                while self.server_blocks[j].hash != hash:
+                while self.server_blocks[j].hash != hash and j < len(self.server_blocks):
                     merge_blocks.append(self.server_blocks.pop(j))
                     j += 1
-                while person_blocks[j].replica is not None:
+                while person_blocks[j].replica is not None and j < len(person_blocks):
                     enum2.append(person_blocks.pop(j))
                     j += 1
                 merge_blocks.append(self.merge_enumeration(enum1, enum2))
