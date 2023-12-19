@@ -3,15 +3,6 @@ from typing import NamedTuple, List
 import threading
 
 
-class Block(NamedTuple):
-    value: List[str]
-    replica: str | None
-    cursor: int | None
-    Range: Range | None
-    time: datetime
-    hash: int
-
-
 class Range(NamedTuple):
     start: int
     finish: int
@@ -24,6 +15,16 @@ class Range(NamedTuple):
 
     def __eq__(self, other):
         return self.start == other.start and self.finish == other.finish
+
+
+class Block(NamedTuple):
+    value: List[str]
+    replica: str or None
+    cursor: int or None
+    Range: Range or None
+    time: datetime
+    hash: int
+
 
 class CRDT:
     def __init__(self, replica_id):
@@ -71,14 +72,14 @@ class CRDT:
                     self.insert(index, value=second_part, replica=self.replica_id,
                                 range=Range(start=save_block.Range.start + count, finish=save_block.Range.finish),
                                 hash=save_block.hash)
-                    self.insert(index, value=value, replica=self.replica_id, cursor=len(value))
+                    self.insert(index, value=list(value), replica=self.replica_id, cursor=len(value))
                     self.insert(index, value=first_part, replica=self.replica_id,
                                 range=Range(start=save_block.Range.start, finish=save_block.Range.start + count),
                                 hash=save_block.hash)
                 else:
-                    self.insert(index, value=value, cursor=len(value), range=Range(start=0, finish=len(value)))
+                    self.insert(index, value=list(value), cursor=len(value), range=Range(start=0, finish=len(value)))
             else:
-                self.insert(index, value=value, cursor=len(value), range=Range(start=0, finish=len(value)))
+                self.insert(index, value=list(value), cursor=len(value), range=Range(start=0, finish=len(value)))
 
     def cursor_remove(self, cursor):
         with self.lock:
@@ -108,7 +109,7 @@ class CRDT:
                     self.insert(index, value=list(string), replica=self.replica_id,
                                 cursor=1, range=Range(start=0, finish=1))
                 else:
-                    self.blocks[index].value += list(string)
+                    self.blocks[index].value += [string]
                     self.blocks[index].cursor = len(self.blocks[index].value)
                     self.blocks[index].replica = self.replica_id
                     self.blocks[index].Range.finish += 1
