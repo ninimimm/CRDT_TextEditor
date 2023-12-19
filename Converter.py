@@ -12,7 +12,8 @@ class Converter:
     def convert_block_to_str(self, block):
         replace = '#$(!-!>'
         return f"{''.join(block.value)}{replace}{block.replica}{replace}{block.cursor}{replace}" \
-               f"{block.Range.start},{block.Range.finish}{replace}{block.time.strftime('%m/%d/%y %H:%M:%S.%f')}"
+               f"{block.Range.start},{block.Range.finish}{replace}{block.time.strftime('%m/%d/%y %H:%M:%S.%f')}" \
+               f"{replace}{block.hash}"
 
     def convert_string_to_crdt(self, data_string):
         replace = '*&#(&'
@@ -26,7 +27,8 @@ class Converter:
         return crdt1
 
     def convert_string_to_block(self, string):
-        value, replica, cursor, range, time = string.split('#$(!-!>')
+        value, replica, cursor, range, time, hash = string.split('#$(!-!>')
         start, finish = range.split(',')
         return Block(value=list(value), replica=replica, cursor=None if cursor == "None" else int(cursor),
-                     Range=Range(start=int(start), finish=int(finish)), time=datetime.strptime(time, '%m/%d/%y %H:%M:%S.%f'))
+                     Range=Range(start=int(start), finish=int(finish)), time=datetime.strptime(time, '%m/%d/%y %H:%M:%S.%f'),
+                     hash=hash)
