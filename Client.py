@@ -21,19 +21,23 @@ class SharedData:
 def update_cursor(cur):
     with class_client.crdt.lock:
         len_cursor = 0
-        max_time, index = datetime.datetime(2000, 1, 1), -1
+        max_time, index, current_len = datetime.datetime(2000, 1, 1), -1, 0
         for i in range(len(class_client.crdt.blocks)):
             if class_client.crdt.blocks[i].cursor is not None\
                     and class_client.crdt.blocks[i].replica == "replica2":
                 if class_client.crdt.blocks[i].time > max_time:
                     max_time = class_client.crdt.blocks[i].time
                     index = i
+                    current_len = len_cursor
             class_client.crdt.blocks[i].replica = None
             len_cursor += len(class_client.crdt.blocks[i].value)
-        if cur != len_cursor and index != -1:
-            gui.editor.mark_set("insert", f"1.{len_cursor}")
-            if len_cursor > 1:
-                gui.last_cursor = len_cursor - 1
+        cur_cur = None
+        if index != -1:
+            cur_cur = current_len + class_client.crdt.blocks[index].cursor
+        if cur != cur_cur and index != -1:
+            gui.editor.mark_set("insert", f"1.{cur_cur}")
+            if cur_cur > 1:
+                gui.last_cursor = cur_cur - 1
 
 
 def update_crdt(data):

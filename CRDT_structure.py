@@ -75,7 +75,8 @@ class CRDT:
                     self.insert(index, value=second_part, replica=self.replica_id,
                                 range=Range(start=save_block.Range.start + count, finish=save_block.Range.finish),
                                 hash=save_block.hash)
-                    self.insert(index, value=list(value), replica=self.replica_id, cursor=len(value))
+                    self.insert(index, value=list(value), replica=self.replica_id, cursor=len(value),
+                                range=Range(start=0, finish=len(value)))
                     self.insert(index, value=first_part, replica=self.replica_id,
                                 range=Range(start=save_block.Range.start, finish=save_block.Range.start + count),
                                 hash=save_block.hash)
