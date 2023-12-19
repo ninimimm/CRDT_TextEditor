@@ -29,6 +29,6 @@ class Converter:
     def convert_string_to_block(self, string):
         value, replica, cursor, range, time, hash = string.split('#$(!-!>')
         start, finish = range.split(',')
-        return Block(value=list(value), replica=replica, cursor=None if cursor == "None" else int(cursor),
+        return Block(value=list(value), replica=None if replica == 'None' else replica, cursor=None if cursor == "None" else int(cursor),
                      Range=Range(start=int(start), finish=int(finish)), time=datetime.strptime(time, '%m/%d/%y %H:%M:%S.%f'),
-                     hash=hash)
+                     hash=int(hash))
