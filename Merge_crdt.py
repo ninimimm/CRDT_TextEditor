@@ -68,6 +68,7 @@ class Merge:
                     enum2.append(person_blocks.pop(j))
                     j += 1
                 merge_blocks.append(self.merge_enumeration(enum1, enum2))
+        merge_blocks += new_blocks
         merge_blocks.append(self.server_blocks)
         crdt1.blocks = merge_blocks
         self.server_blocks = merge_blocks
