@@ -1,9 +1,11 @@
 from datetime import datetime, timedelta
-from typing import NamedTuple, List
+from typing import List
+from dataclasses import dataclass
 import threading
 
 
-class Range(NamedTuple):
+@dataclass
+class Range:
     start: int
     finish: int
 
@@ -17,7 +19,8 @@ class Range(NamedTuple):
         return self.start == other.start and self.finish == other.finish
 
 
-class Block(NamedTuple):
+@dataclass
+class Block:
     value: List[str]
     replica: str or None
     cursor: int or None
@@ -109,7 +112,7 @@ class CRDT:
                     self.insert(index, value=list(string), replica=self.replica_id,
                                 cursor=1, range=Range(start=0, finish=1))
                 else:
-                    self.blocks[index].value += [string]
+                    self.blocks[index].value.append(string)
                     self.blocks[index].cursor = len(self.blocks[index].value)
                     self.blocks[index].replica = self.replica_id
                     self.blocks[index].Range.finish += 1
