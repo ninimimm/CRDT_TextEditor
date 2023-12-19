@@ -19,8 +19,8 @@ class GUI:
         self.editor.pack(side="left", fill="both", expand=True)
         self.editor.bind("<Key>", self.on_key)
         self.editor.bind("<BackSpace>", self.on_backspace)
-        # self.editor.bind("<Control-KeyPress>", self.keypress)
-        # self.editor.bind('<Control-v>', self.paste_text or 'break')
+        self.editor.bind("<Control-KeyPress>", self.keypress)
+        self.editor.bind('<Control-v>', self.paste_text or 'break')
 
     def get_cursor_pos(self):
         current_index = self.editor.index(tk.INSERT)
@@ -48,24 +48,26 @@ class GUI:
             self.last_cursor = cursor - 2
             self.merge_texts(cursor - 1, self.struct.crdt.blocks, self.struct.crdt.lens_of_blocks)
 
-    # def copy_text(self):
-    #     selected_text = self.editor.selection_get()
-    #     self.root.clipboard_clear()
-    #     self.root.clipboard_append(selected_text)
-    #
-    # def paste_text(self):
-    #     try:
-    #         clipboard_text = self.root.clipboard_get()
-    #     except tk.TclError as e:
-    #         return
-    #     cursor_pos = self.get_cursor_pos()
-    #     self.struct.crdt.cursor_insert(cursor_pos, clipboard_text)
-    #     self.cursor = cursor_pos + len(clipboard_text)
-    #     self.editor.insert(tk.INSERT, clipboard_text)
-    #     self.editor.see(tk.INSERT)
+    def copy_text(self):
+        selected_text = self.editor.selection_get()
+        self.root.clipboard_clear()
+        self.root.clipboard_append(selected_text)
 
-    # def keypress(self, e):
-    #     if e.keycode == 86 and e.keysym != 'v':
-    #         self.paste_text() or 'break'
-    #     elif e.keycode == 67 and e.keysym != 'c':
-    #         self.copy_text()
+    def paste_text(self):
+        try:
+            clipboard_text = self.root.clipboard_get()
+        except tk.TclError as e:
+            return
+        cursor_pos = self.get_cursor_pos()
+        self.struct.crdt.cursor_insert(cursor_pos, clipboard_text)
+        self.last_cursor = cursor_pos + len(clipboard_text)
+        self.merge_texts(self.last_cursor, self.struct.crdt.blocks, self.struct.crdt.lens_of_blocks)
+        self.editor.insert(tk.INSERT, clipboard_text)
+        self.editor.see(tk.INSERT)
+
+
+    def keypress(self, e):
+        if e.keycode == 86 and e.keysym != 'v':
+            self.paste_text() or 'break'
+        elif e.keycode == 67 and e.keysym != 'c':
+            self.copy_text()

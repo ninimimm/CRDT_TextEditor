@@ -42,9 +42,9 @@ class CRDT:
         self.blocks.append(block)
         self.lens_of_blocks.append(length)
 
-    def insert(self, index, value, replica=None, cursor=None, range=None, hash=None):
+    def insert(self, index, value, replica=None, cursor=None, range=None, hash=None, time=datetime.now()):
         self.blocks.insert(index, Block(value=value, replica=replica, cursor=cursor,
-                                        Range=Range(start=range.start, finish=range.finish), time=datetime.now(),
+                                        Range=Range(start=range.start, finish=range.finish), time=time,
                                         hash=hash if hash is not None else self.current_hash))
         self.current_hash += 1
         self.lens_of_blocks.insert(index, len(value))
@@ -74,12 +74,12 @@ class CRDT:
                     self.remove(index)
                     self.insert(index, value=second_part, replica=self.replica_id,
                                 range=Range(start=save_block.Range.start + count, finish=save_block.Range.finish),
-                                hash=save_block.hash)
+                                hash=save_block.hash, time=save_block.time)
                     self.insert(index, value=list(value), replica=self.replica_id, cursor=len(value),
                                 range=Range(start=0, finish=len(value)))
                     self.insert(index, value=first_part, replica=self.replica_id,
                                 range=Range(start=save_block.Range.start, finish=save_block.Range.start + count),
-                                hash=save_block.hash)
+                                hash=save_block.hash, time=save_block.time)
                 else:
                     self.insert(index, value=list(value), replica=self.replica_id, cursor=len(value), range=Range(start=0, finish=len(value)))
             else:
@@ -99,11 +99,11 @@ class CRDT:
                 if len(second_part) > 0:
                     self.insert(index, value=second_part, replica=self.replica_id,
                                 range=Range(start=save_block.Range.start + count, finish=save_block.Range.finish),
-                                hash=save_block.hash)
+                                hash=save_block.hash, time=save_block.time)
                 if len(first_part) > 0:
                     self.insert(index, value=first_part, replica=self.replica_id, cursor=len(first_part),
                                 range=Range(start=save_block.Range.start, finish=save_block.Range.start + count - 1),
-                                hash=save_block.hash)
+                                hash=save_block.hash, time=save_block.time)
 
     def add_string(self, cursor, string):
         with self.lock:
