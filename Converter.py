@@ -23,7 +23,7 @@ class Converter:
         blocks_str = data_string.split(replace)
         for block_str in blocks_str:
             block = self.convert_string_to_block(block_str)
-            crdt1.blocks.append(block, len(block[0]))
+            crdt1.blocks.append(block, len(block.value))
         return crdt1
 
     def convert_string_to_block(self, string):
