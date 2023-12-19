@@ -57,6 +57,12 @@ class Merge:
 
         return result
 
+    def get_replica(self, crdt1):
+        for block in crdt1.blocks:
+            if block.replica is not None:
+                return block.replica
+        return None
+
     def merge(self, crdt1):
         print(self.server_blocks, "тут")
         print(crdt1.blocks)
@@ -64,6 +70,7 @@ class Merge:
         merge_blocks = []
         new_blocks = Queue()
         person_blocks = crdt1.blocks.copy()
+
         while person_blocks:
             if person_blocks[0].replica is None:
                 if new_blocks.empty():
@@ -92,7 +99,9 @@ class Merge:
                     else:
                         i += 1
                 merge_blocks += self.merge_enumeration(enum1, enum2)
-        merge_blocks += self.server_blocks
+        replica = self.get_replica(crdt1)
+        set_crdt1 = set(crdt1.blocks)
+        merge_blocks += [x for x in self.server_blocks if x.replica != replica or x in set_crdt1]
         while not new_blocks.empty():
             merge_blocks.append(new_blocks.get())
         crdt1.blocks = merge_blocks
