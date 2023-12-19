@@ -69,7 +69,7 @@ class CRDT:
             index, count = self.cursor_to_index(cursor, self.blocks, self.lens_of_blocks)
             if len(self.blocks) > index:
                 save_block = self.blocks[index]
-                first_part, second_part = save_block[0][:count], save_block[0][count:]
+                first_part, second_part = save_block.value[:count], save_block.value[count:]
                 if len(second_part) > 0 and len(first_part) > 0:
                     self.remove(index)
                     self.insert(index, value=second_part, replica=self.replica_id,
@@ -87,14 +87,14 @@ class CRDT:
     def cursor_remove(self, cursor):
         with self.lock:
             index, count = self.cursor_to_index(cursor, self.blocks, self.lens_of_blocks)
-            if count == len(self.blocks[index][0]):
-                self.blocks[index][0].pop(count - 1)
-                if len(self.blocks[index][0]) == 0:
+            if count == len(self.blocks[index].value):
+                self.blocks[index].value.pop(count - 1)
+                if len(self.blocks[index].value) == 0:
                     self.remove(index)
             else:
                 save_block = self.blocks[index]
                 self.remove(index)
-                first_part, second_part = save_block[0][:count - 1], save_block[0][count:]
+                first_part, second_part = save_block.value[:count - 1], save_block.value[count:]
                 if len(second_part) > 0:
                     self.insert(index, value=second_part, replica=self.replica_id,
                                 range=Range(start=save_block.Range.start + count, finish=save_block.Range.finish),
@@ -123,4 +123,4 @@ class CRDT:
                             cursor=1, range=Range(start=0, finish=1))
 
     def display(self):
-        return ''.join([''.join(block[0]) for block in self.blocks])
+        return ''.join([''.join(block.value) for block in self.blocks])
