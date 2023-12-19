@@ -9,12 +9,21 @@ class Block(NamedTuple):
     cursor: int | None
     Range: Range | None
     time: datetime
+    hash: int
 
 
 class Range(NamedTuple):
     start: int
     finish: int
 
+    def __lt__(self, other):
+        return (self.start, self.finish) < (other.start, other.finish)
+
+    def __gt__(self, other):
+        return (self.start, self.finish) > (other.start, other.finish)
+
+    def __eq__(self, other):
+        return self.start == other.start and self.finish == other.finish
 
 class CRDT:
     def __init__(self, replica_id):
@@ -23,16 +32,18 @@ class CRDT:
         self.lens_of_blocks = []
         self.editor = None
         self.lock = threading.Lock()
+        self.current_hash = 0
 
     def append(self, block, length):
         self.blocks.append(block)
         self.lens_of_blocks.append(length)
 
-    def insert(self, index, value, replica=None, cursor=None, range=None):
+    def insert(self, index, value, replica=None, cursor=None, range=None, hash=None):
         self.blocks.insert(index, Block(value=value, replica=replica, cursor=cursor,
-                                        Range=Range(start=range[0], finish=range[1]), time=datetime.now()))
+                                        Range=Range(start=range[0], finish=range[1]), time=datetime.now(),
+                                        hash=hash if hash is not None else self.current_hash))
+        self.current_hash += 1
         self.lens_of_blocks.insert(index, len(value))
-
 
     def remove(self, index):
         self.blocks.pop(index)
@@ -58,10 +69,12 @@ class CRDT:
                 if len(second_part) > 0 and len(first_part) > 0:
                     self.remove(index)
                     self.insert(index, value=second_part, replica=self.replica_id,
-                                range=Range(start=save_block.Range.start + count, finish=save_block.Range.finish))
+                                range=Range(start=save_block.Range.start + count, finish=save_block.Range.finish),
+                                hash=save_block.hash)
                     self.insert(index, value=value, replica=self.replica_id, cursor=len(value))
                     self.insert(index, value=first_part, replica=self.replica_id,
-                                range=Range(start=save_block.Range.start, finish=save_block.Range.start + count))
+                                range=Range(start=save_block.Range.start, finish=save_block.Range.start + count),
+                                hash=save_block.hash)
                 else:
                     self.insert(index, value=value, cursor=len(value), range=Range(start=0, finish=len(value)))
             else:
@@ -80,10 +93,12 @@ class CRDT:
                 first_part, second_part = save_block[0][:count - 1], save_block[0][count:]
                 if len(second_part) > 0:
                     self.insert(index, value=second_part, replica=self.replica_id,
-                                range=Range(start=save_block.Range.start + count, finish=save_block.Range.finish))
+                                range=Range(start=save_block.Range.start + count, finish=save_block.Range.finish),
+                                hash=save_block.hash)
                 if len(first_part) > 0:
                     self.insert(index, value=first_part, replica=self.replica_id, cursor=len(first_part),
-                                range=Range(start=save_block.Range.start, finish=save_block.Range.start + count - 1))
+                                range=Range(start=save_block.Range.start, finish=save_block.Range.start + count - 1),
+                                hash=save_block.hash)
 
     def add_string(self, cursor, string):
         with self.lock:
