@@ -113,7 +113,7 @@ class CRDT:
                                 cursor=1, range=Range(start=0, finish=1))
                 else:
                     self.blocks[index].value.append(string)
-                    self.blocks[index].cursor = len(self.blocks[index].value)
+                    self.blocks[index].cursor += 1
                     self.blocks[index].replica = self.replica_id
                     self.blocks[index].Range.finish += 1
                     self.blocks[index].time = datetime.now()
