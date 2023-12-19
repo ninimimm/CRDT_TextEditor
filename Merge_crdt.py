@@ -36,7 +36,19 @@ class Merge:
         else:
             for block in enum2:
                 ans_enum.append(block)
-        return ans_enum
+
+        result = []
+        for block in ans_enum:
+            if not result or result[-1].hash != block.hash:
+                result.append(block)
+            else:
+                if result[-1].time < block.time:
+                    result[-1].cursor = len(result[-1].value) + block.cursor
+                    result[-1].time = block.time
+                result[-1].value += block.value
+                result[-1].Range.finish += len(block.value)
+
+        return result
 
     def merge(self, crdt1):
         set_hash_server = set([x.hash for x in self.server_blocks])

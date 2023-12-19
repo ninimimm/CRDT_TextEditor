@@ -1,3 +1,4 @@
+import datetime
 from queue import Queue
 import select
 import socket
@@ -20,12 +21,12 @@ class SharedData:
 def update_cursor(cur):
     with class_client.crdt.lock:
         len_cursor = 0
-        max_time, index = 0, -1
+        max_time, index = datetime.datetime(2000, 1, 1), -1
         for i in range(len(class_client.crdt.blocks)):
             if class_client.crdt.blocks[i].cursor is not None\
                     and class_client.crdt.blocks[i].replica == "replica2":
                 if class_client.crdt.blocks[i].time > max_time:
-                    max_time = class_client.crdt.blocks[i].timef
+                    max_time = class_client.crdt.blocks[i].time
                     index = i
             len_cursor += len(class_client.crdt.blocks[i].value)
         if cur != len_cursor and index != -1:
@@ -68,7 +69,7 @@ if __name__ == "__main__":
 
     def connection():
         client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        ip_port = ('127.0.0.1', 8080)
+        ip_port = ('158.160.7.179', 8080)
 
         start_connection(client, ip_port)
         while True:
