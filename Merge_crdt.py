@@ -8,8 +8,10 @@ class Merge:
         self.server_blocks = []
 
     def merge_enumeration(self, enum1, enum2):
+        print([x.value for x in enum1], [x.value for x in enum2], "enum")
         ans_enum = []
-        hash = enum1[0].hash
+        if enum1:
+            hash = enum1[0].hash
         while enum1 and enum2:
             if enum1[0].Range < enum2[0].Range:
                 for i in range(len(enum1[0].value)):
@@ -53,6 +55,8 @@ class Merge:
         return result
 
     def merge(self, crdt1):
+        print(self.server_blocks, "тут")
+        print(crdt1.blocks)
         set_hash_server = set([x.hash for x in self.server_blocks])
         merge_blocks = []
         new_blocks = Queue()
@@ -83,3 +87,4 @@ class Merge:
             merge_blocks.append(new_blocks.get())
         crdt1.blocks = merge_blocks
         self.server_blocks = merge_blocks
+        print(self.server_blocks)

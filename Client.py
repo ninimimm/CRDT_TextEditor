@@ -42,7 +42,9 @@ def update_crdt(data):
         cur = gui.get_cursor_pos()
         if data != "empty":
             replace_text(''.join(re.findall(r"(?:\*\&#\(&|^)(.+?)#\$\(!\-\!\>", data)), cur)
+        hash = class_client.crdt.current_hash
         class_client.crdt = new_crdt
+        class_client.crdt.current_hash = hash
         update_cursor(cur)
 
 
@@ -70,7 +72,7 @@ if __name__ == "__main__":
 
     def connection():
         client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        ip_port = ('127.0.0.1', 8080)
+        ip_port = ('158.160.7.179', 8080)
 
         start_connection(client, ip_port)
         while True:
@@ -82,6 +84,7 @@ if __name__ == "__main__":
                         if len(class_client.crdt.blocks) > 0:
                             class_client.crdt.blocks[index].cursor = count
                         client.sendto(converter.convert_crdt_to_str(blocks).encode('utf-8'), ip_port)
+                        print(blocks)
             ready = select.select([client], [], [], 0.05)
             if ready[0]:
                 data, _ = client.recvfrom(1024)
