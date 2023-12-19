@@ -9,7 +9,7 @@ class Merge:
     def merge_enumeration(self, enum1, enum2):
         ans_enum = []
         hash = enum1[0].hash
-        while enum1 or enum2:
+        while enum1 and enum2:
             if enum1[0].Range < enum2[0].Range:
                 ans_enum.append(enum1.pop(0))
                 while enum1[0].hash != hash:
@@ -40,7 +40,7 @@ class Merge:
         merge_blocks = []
         new_blocks = Queue()
         person_blocks = crdt1.blocks.copy()
-        while person_blocks or self.server_blocks:
+        while person_blocks and self.server_blocks:
             if person_blocks[0].replica is None:
                 if new_blocks.empty():
                     person_blocks.pop(0)
