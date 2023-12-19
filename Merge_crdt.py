@@ -40,33 +40,26 @@ class Merge:
         merge_blocks = []
         new_blocks = Queue()
         person_blocks = crdt1.blocks.copy()
-        index = 0
-        for i in range(len(person_blocks)):
-            if person_blocks[i].replica is None:
+        while person_blocks or self.server_blocks:
+            if person_blocks[0].replica is None:
                 if new_blocks.empty():
+                    person_blocks.pop(0)
                     continue
-                while self.server_blocks[index].hash != person_blocks[i].hash:
-                    merge_blocks.append(self.server_blocks.pop(index))
-                    index += 1
+                while self.server_blocks and self.server_blocks[0].hash != person_blocks[0].hash:
+                    merge_blocks.append(self.server_blocks.pop(0))
                 while new_blocks:
                     merge_blocks.append(new_blocks.get())
-            if person_blocks[i].hash not in set_hash_server:
-                new_blocks.put(person_blocks[i])
+            if person_blocks[0].hash not in set_hash_server:
+                new_blocks.put(person_blocks.pop(0))
             else:
-                j = i
-                enum1 = []
-                enum2 = []
-                while j < len(person_blocks) and person_blocks[j].replica is not None:
-                    enum1.append(person_blocks.pop(j))
-                    j += 1
-                j = 0
-                hash = person_blocks[i].hash
-                while j < len(self.server_blocks) and self.server_blocks[j].hash != hash:
-                    merge_blocks.append(self.server_blocks.pop(j))
-                    j += 1
-                while j < len(person_blocks) and person_blocks[j].replica is not None:
-                    enum2.append(person_blocks.pop(j))
-                    j += 1
+                enum1, enum2 = [], []
+                while person_blocks and person_blocks[0].replica is not None:
+                    enum1.append(person_blocks.pop(0))
+                hash = person_blocks[0].hash
+                while self.server_blocks and self.server_blocks[0].hash != hash:
+                    merge_blocks.append(self.server_blocks.pop(0))
+                while person_blocks and person_blocks[0].replica is not None:
+                    enum2.append(person_blocks.pop(0))
                 merge_blocks.append(self.merge_enumeration(enum1, enum2))
         while not new_blocks.empty():
             merge_blocks.append(new_blocks.get())
