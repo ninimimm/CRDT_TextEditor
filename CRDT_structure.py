@@ -143,8 +143,13 @@ class CRDT:
             if count == len(self.blocks[index].value):
                 self.blocks[index].value.pop(count - 1)
                 self.blocks[index].Range.finish -= 1
+                self.blocks[index].replica = self.replica_id
+                self.blocks[index].time = datetime.now()
+                self.blocks[index].cursor = len(self.blocks[index].value)
                 if len(self.blocks[index].value) == 0:
                     self.remove(index)
+                    if index - 1 > -1:
+                        self.blocks[index-1].replica = self.replica_id
             else:
                 save_block = self.blocks[index]
                 self.remove(index)
@@ -156,7 +161,7 @@ class CRDT:
                 if len(first_part) > 0:
                     self.insert(index, value=first_part, replica=self.replica_id, cursor=len(first_part),
                                 range=Range(start=save_block.Range.start, finish=save_block.Range.start + count - 1),
-                                hash=save_block.hash)
+                                hash=save_block.hash, time=datetime.now())
 
     def add_string(self, cursor, string):
         with self.lock:

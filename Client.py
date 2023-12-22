@@ -28,14 +28,17 @@ class Client:  # pragma: no cover
             for i in range(len(self.crdt.blocks)):
                 if self.crdt.blocks[i].cursor is not None\
                         and self.crdt.blocks[i].replica == "replica2":
+                    print(i, self.crdt.blocks[i].cursor)
                     if self.crdt.blocks[i].time > max_time:
                         max_time = self.crdt.blocks[i].time
                         index = i
                         current_len = len_cursor
                 self.crdt.blocks[i].replica = None
                 len_cursor += len(self.crdt.blocks[i].value)
+            print(current_len)
             cur_cur = None
             if index != -1:
+                print(self.crdt.blocks[index].cursor, index)
                 cur_cur = current_len + self.crdt.blocks[index].cursor
             if cur != cur_cur and index != -1:
                 self.gui.editor.mark_set("insert", f"1.{cur_cur}")
