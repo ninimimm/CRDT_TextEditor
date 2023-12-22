@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import List
 from dataclasses import dataclass
 import threading
+from unittest.mock import patch
 
 
 @dataclass
@@ -18,6 +19,9 @@ class Range:
 
     def __eq__(self, other):  # pragma: no cover
         return self.start == other.start and self.finish == other.finish
+
+    def copy(self):
+        return Range(start=self.start, finish=self.finish)
 
 
 @dataclass
@@ -37,7 +41,7 @@ class Block:
             value=copy.deepcopy(self.value),
             replica=self.replica,
             cursor=self.cursor,
-            Range=self.Range,
+            Range=self.Range.copy(),
             time=self.time,
             hash=self.hash
         )
@@ -64,6 +68,19 @@ class CRDT:
         self.editor = None
         self.lock = threading.Lock()
         self.current_hash = 0
+
+    def __eq__(self, other):  # pragma: no cover
+        with patch.object(Block, '__eq__', Block.custom_eq):
+            return self.replica_id == other.replica_id and self.blocks == other.blocks and\
+                self.lens_of_blocks == other.lens_of_blocks
+
+    def copy(self):  # pragma: no cover
+        crdt = CRDT(self.replica_id)
+        crdt.blocks = copy.deepcopy(self.blocks)
+        crdt.lens_of_blocks = self.lens_of_blocks.copy()
+        crdt.editor = self.editor
+        crdt.current_hash = self.current_hash
+        return crdt
 
     def append(self, block, length):
         self.blocks.append(block)
@@ -125,6 +142,7 @@ class CRDT:
             index, count = self.cursor_to_index(cursor, self.blocks, self.lens_of_blocks)
             if count == len(self.blocks[index].value):
                 self.blocks[index].value.pop(count - 1)
+                self.blocks[index].Range.finish -= 1
                 if len(self.blocks[index].value) == 0:
                     self.remove(index)
             else:
@@ -154,5 +172,5 @@ class CRDT:
                 self.insert(index, value=list(string), replica=self.replica_id,
                             cursor=1, range=Range(start=0, finish=len(string)))
 
-    def display(self):  # pragma: no cove
+    def display(self):  # pragma: no cover
         return ''.join([''.join(block.value) for block in self.blocks])

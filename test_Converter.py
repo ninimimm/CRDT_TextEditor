@@ -5,9 +5,9 @@ from unittest.mock import patch
 from CRDT_structure import CRDT, Block, Range
 
 
-class TestCRDTStructure(unittest.TestCase):  # pragma: no cover
+class TestConverter(unittest.TestCase):  # pragma: no cover
     def __init__(self, *args, **kwargs):
-        super(TestCRDTStructure, self).__init__(*args, **kwargs)
+        super(TestConverter, self).__init__(*args, **kwargs)
         self.crdt = CRDT("replica1")
         self.converter = Converter(self.crdt.replica_id)
         self.based_block1 = Block(value=["к", "о", "ш", "к", "а"], replica=self.crdt.replica_id,
@@ -18,13 +18,19 @@ class TestCRDTStructure(unittest.TestCase):  # pragma: no cover
                                  cursor=5, Range=Range(start=0, finish=5), time=datetime.now(),
                                  hash=1)
 
-    def test_append(self):  # pragma: no cover
+    def test_converter_empty(self):  # pragma: no cover
+        with patch.object(Block, '__eq__', self.based_block1.custom_eq):
+            self.assertEqual(self.crdt.copy(),
+                self.converter.convert_string_to_crdt(
+                    self.converter.convert_crdt_to_str(self.crdt.blocks.copy())))
+
+    def test_converter(self):  # pragma: no cover
         with patch.object(Block, '__eq__', self.based_block1.custom_eq):
             self.crdt.cursor_insert(0, self.based_block1.value)
             self.crdt.cursor_insert(5, self.based_block2.value)
-            self.assertEqual(self.crdt.blocks.copy(),
+            self.assertEqual(self.crdt.copy(),
                 self.converter.convert_string_to_crdt(
-                    self.converter.convert_crdt_to_str(self.crdt.blocks)).blocks)
+                    self.converter.convert_crdt_to_str(self.crdt.blocks.copy())))
 
 
 if __name__ == '__main__':  # pragma: no cover
