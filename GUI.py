@@ -37,7 +37,6 @@ class GUI:
         if len(event.char) == 1:
             with self.struct.crdt.lock:
                 cursor = self.get_cursor_pos()
-            print(cursor, "ON KEY", self.last_cursor)
             if self.last_cursor != cursor - 1 or cursor == 0:
                 self.struct.crdt.cursor_insert(cursor, event.char)
             else:
