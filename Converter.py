@@ -1,6 +1,8 @@
 from CRDT_structure import CRDT
 from datetime import datetime
 from CRDT_structure import Block, Range
+
+
 class Converter:
     def __init__(self, replica):
         self.replica = replica

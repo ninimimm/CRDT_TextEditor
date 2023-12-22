@@ -7,11 +7,14 @@ import re
 from GUI import GUI
 from Converter import Converter
 from CRDT_structure import CRDT
+import tkinter as tk
+
 
 class Client:
     def __init__(self):
         self.crdt = CRDT("replica2")
         self.lock = threading.Lock()
+
 
 class SharedData:
     def __init__(self):
@@ -45,16 +48,23 @@ def update_crdt(data):
         new_crdt = converter.convert_string_to_crdt(data)
         cur = gui.get_cursor_pos()
         if data != "empty":
-            replace_text(''.join(re.findall(r"(?:\*\&#\(&|^)(.+?)#\$\(!\-\!\>", data)), cur)
+            replace_text(''.join(re.findall(r"(?:\*\&#\(&|^)(.+?)#\$\(!\-\!\>", data)), cur, new_crdt)
         hash = class_client.crdt.current_hash
         class_client.crdt = new_crdt
         class_client.crdt.current_hash = hash
         update_cursor(cur)
 
 
-def replace_text(update, cur):
+def replace_text(update, cur, new_crdt):
     gui.editor.delete("1.0", "end")
-    gui.editor.insert("1.0", update)
+    if gui.is_blame:
+        last_index = 0
+        for block in new_crdt.blocks:
+            block_length = len(block.value)
+            gui.editor.insert(tk.END, ''.join(block.value), block.replica)
+            last_index += block_length
+    else:
+        gui.editor.insert("1.0", update)
     gui.editor.mark_set("insert", f"1.{cur}")
 
 
@@ -76,7 +86,8 @@ if __name__ == "__main__":
 
     def connection():
         client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        ip_port = ('158.160.7.179', 8080)
+        ip_port = ('127.0.0.1', 8080)
+        # ip_port = ('158.160.7.179', 8080)
 
         start_connection(client, ip_port)
         while True:
